@@ -101,6 +101,11 @@ max_quote_age               never exceed 60 s
 concurrent_names            start at 1
 ```
 
+The kit enforces the first and third of these in simulation
+(`--inventory-cap`, `--loss-limit`), and enforces the cap against the position a
+fill would *produce* rather than the one it started from. Copy that behaviour:
+a limit checked only after the fact lets one trade breach it by its entire size.
+
 Start with one name for a full week of evenings. Add names only after you can
 explain your PnL attribution — how much came from the half-spread and how much
 was handed back to informed flow. If you cannot decompose it, you do not yet
