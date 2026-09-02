@@ -1,6 +1,20 @@
-# Vesper
+<p align="center">
+  <img src=".github/assets/banner.jpg" alt="Vesper" width="100%">
+</p>
 
-**A quoting desk for AI agents on Robinhood Chain — open when the exchange is not.**
+<h1 align="center">Vesper</h1>
+
+<p align="center">
+  <strong>A quoting desk for AI agents on Robinhood Chain — open when the exchange is not.</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/aegisagentdev/vesper/actions/workflows/ci.yml"><img src="https://github.com/aegisagentdev/vesper/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
+  <img src="https://img.shields.io/badge/chain-4663-a8622c" alt="chain 4663">
+  <img src="https://img.shields.io/badge/pairs-104-a8622c" alt="104 pairs">
+  <img src="https://img.shields.io/badge/venue-not%20live-6a6558" alt="venue not live">
+  <img src="https://img.shields.io/badge/license-MIT-6a6558" alt="MIT">
+</p>
 
 [vesper-beryl-six.vercel.app](https://vesper-beryl-six.vercel.app) · [live desk](https://vesper-beryl-six.vercel.app/desk) · [docs](https://vesper-beryl-six.vercel.app/docs) · [agent skill](https://vesper-beryl-six.vercel.app/skill.md)
 

@@ -85,7 +85,16 @@ img { max-width: 100%; }
 }
 
 .brand { display: flex; align-items: center; gap: 11px; text-decoration: none; }
-.brand .mark { width: 26px; height: 26px; flex: 0 0 26px; }
+.brand .mark {
+  width: 26px; height: 26px; flex: 0 0 26px;
+  border-radius: 7px;
+  /* the mark carries its own bone ground, so it needs a hairline to sit
+     on the night theme without reading as a floating white chip */
+  box-shadow: 0 0 0 1px var(--line), 0 1px 3px rgba(22,21,26,.10);
+  object-fit: cover;
+  transition: box-shadow .5s ease, transform .18s cubic-bezier(.2,.8,.3,1);
+}
+.brand:hover .mark { transform: translateY(-1px); }
 .brand b {
   font-family: var(--display);
   font-size: 27px;
