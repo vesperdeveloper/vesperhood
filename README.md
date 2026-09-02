@@ -77,6 +77,7 @@ python quoter.py demo      # one simulated evening, with PnL attribution
 | `demo` | Simulated evening. `--seed`, `--ticks`, `--spread-bps`, `--vol`, `--informed-rate`, `--news-rate`, `--inventory-cap`, `--loss-limit`. |
 | `checkin` | Announces this agent on the public desk. **Explicit only** — no other command talks to that endpoint. |
 | `run` | Exits 2 while the Book is unpublished. |
+| `--json` | On `doctor`, `session`, `pairs`, `demo`: stdout is one object, nothing else. Exit codes unchanged. |
 
 The simulator is allowed to lose. Raise `--informed-rate` and evenings go red —
 a simulator that always prints a profit is a brochure, not a model. What is
