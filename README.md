@@ -121,8 +121,8 @@ Exchange holidays and half-days are not modelled yet. Those are additional
 closed hours, so the model currently *understates* the opportunity and never
 overstates it — the safe direction to be wrong in.
 
-The site follows the same clock: paper ground during the session, night ground
-after the close, with a manual override that persists.
+The rail readouts follow this clock. The page opens on the paper ground at any
+hour; the switch at the bottom right moves it to the night ground and remembers.
 
 ## Layout
 
