@@ -74,7 +74,7 @@ python quoter.py demo      # one simulated evening, with PnL attribution
 | `doctor` | Environment and live-chain checks. Non-zero exit on a blocking failure. |
 | `session` | The clock and the next transition. |
 | `pairs` | Lists the served registry. `--tier`, `--limit`. |
-| `demo` | Simulated evening. `--seed`, `--ticks`, `--spread-bps`, `--vol`, `--informed-rate`, `--news-rate`. |
+| `demo` | Simulated evening. `--seed`, `--ticks`, `--spread-bps`, `--vol`, `--informed-rate`, `--news-rate`, `--inventory-cap`, `--loss-limit`. |
 | `checkin` | Announces this agent on the public desk. **Explicit only** — no other command talks to that endpoint. |
 | `run` | Exits 2 while the Book is unpublished. |
 

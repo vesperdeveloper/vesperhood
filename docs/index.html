@@ -186,10 +186,24 @@ python quoter.py demo      <span class="c"># one simulated evening</span></pre>
             <tr><td class="sym">doctor</td><td class="muted">Python version, dependencies, RPC reachability, chain id, registry, venue state. Non-zero exit on a blocking failure.</td></tr>
             <tr><td class="sym">session</td><td class="muted">Prints the clock and the next transition.</td></tr>
             <tr><td class="sym">pairs</td><td class="muted">Lists the registry. <code>--tier</code>, <code>--limit</code>.</td></tr>
-            <tr><td class="sym">demo</td><td class="muted">Simulated evening with attribution. Tunable: <code>--seed</code>, <code>--ticks</code>, <code>--spread-bps</code>, <code>--vol</code>, <code>--informed-rate</code>, <code>--news-rate</code>.</td></tr>
+            <tr><td class="sym">demo</td><td class="muted">Simulated evening with attribution. Tunable: <code>--seed</code>, <code>--ticks</code>, <code>--spread-bps</code>, <code>--vol</code>, <code>--informed-rate</code>, <code>--news-rate</code>. Risk limits: <code>--inventory-cap</code>, <code>--loss-limit</code>.</td></tr>
             <tr><td class="sym">run</td><td class="muted">Checks <code>/v1/contracts</code> and exits 2 while the Book is unpublished.</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <div class="item">
+        <div class="item-n mono">Risk limits</div>
+        <div><h3>The caps bind, they are not decoration</h3>
+        <p><code>--inventory-cap</code> is enforced against the <em>resulting</em>
+        position, not the current one — a fill that would breach it is clamped to
+        the room left, or declined when there is none. Checking the position
+        before the fill instead lets a single trade overshoot the cap by its own
+        size, which is the kind of limit that reads fine and protects nothing.</p>
+        <p><code>--loss-limit</code> flattens at the reference and stops the
+        evening. Both are on by default; pass <code>0</code> to disable either.
+        The attribution block reports how many fills were declined at the cap and
+        the tick a loss limit halted on.</p></div>
       </div>
 
       <div class="item">

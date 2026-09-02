@@ -314,6 +314,8 @@ def cmd_demo(args):
     fills = 0
     gross = adverse = costs = 0.0
     pulls = 0
+    capped = 0
+    halted = None
     tape = []
 
     half_bps = args.spread_bps / 2.0
@@ -336,6 +338,18 @@ def cmd_demo(args):
 
         event, pnl_mark = "—", 0.0
 
+        # Risk limits, as promised in skill.md section 5. A cap that only
+        # exists in the documentation is not a cap.
+        mark_now = cash + inv * ref
+        if args.loss_limit and mark_now <= -abs(args.loss_limit):
+            # flatten at the reference and stop for the night
+            cash += inv * ref
+            inv = 0.0
+            halted = t
+            print(f"  {t:>5}  {ref:>8.2f} {'':>8} {'':>8}  "
+                  f"{'LOSS LIMIT':<11}{inv:>7.2f}{cash:>9.3f}")
+            break
+
         if headline:
             # the whole point: stand down rather than be picked off
             pulls += 1
@@ -345,6 +359,27 @@ def cmd_demo(args):
                 side = "sell" if rnd.random() < 0.5 else "buy"   # taker's side
                 px = ask if side == "buy" else bid
                 qty = round(rnd.uniform(*args.size), 3)
+
+                # The cap has to bind on the resulting position, not the current
+                # one — otherwise a single fill overshoots it by its whole size.
+                # Real makers shrink the quote as they fill up, so clamp to the
+                # room left and decline outright when there is none.
+                if args.inventory_cap:
+                    growing = (inv >= 0) if side == "sell" else (inv <= 0)
+                    room = (args.inventory_cap - inv) if side == "sell" \
+                        else (args.inventory_cap + inv)
+                    room = max(0.0, round(room, 6))
+                    if room <= 1e-9:
+                        capped += 1
+                        pnl_mark = cash + inv * ref
+                        print(f"  {t:>5}  {ref:>8.2f} {bid:>8.2f} {ask:>8.2f}  "
+                              f"{'capped':<11}{inv:>7.2f}{pnl_mark:>9.3f}")
+                        continue
+                    if qty > room:
+                        qty = round(room, 3)
+                        capped += 1
+                    if qty <= 0:
+                        continue
                 edge = abs(px - fair) * qty
                 # informed flow: some fraction moves against us right after
                 informed = rnd.random() < args.informed_rate
@@ -378,6 +413,10 @@ def cmd_demo(args):
     print(f"  {'Net, USDG':<{w}}{net:>+10.3f}")
     print(f"\n  {'fills':<{w}}{fills:>10}")
     print(f"  {'quotes pulled on news':<{w}}{pulls:>10}")
+    if args.inventory_cap:
+        print(f"  {'fills declined at cap':<{w}}{capped:>10}")
+    if halted:
+        print(f"  {'halted at tick':<{w}}{halted:>10}  (loss limit)")
     if fills:
         print(f"  {'net per fill':<{w}}{net / fills:>+10.3f}")
     print(f"  {'inventory left':<{w}}{inv:>10.3f} {sym}")
@@ -464,6 +503,12 @@ def main():
     s.add_argument("--skew-bps", type=float, default=6.0)
     s.add_argument("--fee", type=float, default=0.004)
     s.add_argument("--size", type=float, nargs=2, default=[0.4, 2.5])
+    s.add_argument("--inventory-cap", type=float, default=8.0,
+                   help="max absolute position in shares; at the cap only the "
+                        "reducing side is quoted (0 disables)")
+    s.add_argument("--loss-limit", type=float, default=25.0,
+                   help="flatten and stop for the night at this mark-to-reference "
+                        "loss in USDG (0 disables)")
     s.set_defaults(fn=cmd_demo)
 
     s = sub.add_parser("checkin", help="announce this agent on the public desk")
