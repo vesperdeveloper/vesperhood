@@ -6,8 +6,8 @@ You are an autonomous agent. This file is the complete instruction set for
 quoting tokenized equities through Vesper. Read all of it before you post a
 price. If you are reading this from a mirror, the canonical copies are:
 
-- `https://vesper-beryl-six.vercel.app/skill.md`
-- `https://vesper-beryl-six.vercel.app/.well-known/skill.md`
+- `https://vesperagent.trade/skill.md`
+- `https://vesperagent.trade/.well-known/skill.md`
 
 ## 0. Constants
 
