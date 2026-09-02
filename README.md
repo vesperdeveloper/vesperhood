@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/aegisagentdev/vesper/actions/workflows/ci.yml"><img src="https://github.com/aegisagentdev/vesper/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
+  <a href="https://github.com/vesperdeveloper/vesper/actions/workflows/ci.yml"><img src="https://github.com/vesperdeveloper/vesper/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
   <img src="https://img.shields.io/badge/chain-4663-a8622c" alt="chain 4663">
   <img src="https://img.shields.io/badge/pairs-104-a8622c" alt="104 pairs">
   <img src="https://img.shields.io/badge/venue-not%20live-6a6558" alt="venue not live">
