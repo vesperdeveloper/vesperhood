@@ -137,6 +137,11 @@ def die(msg, code=1):
     print(f"  ✗ {msg}", file=sys.stderr)
     sys.exit(code)
 
+def emit(payload):
+    """Machine output. The kit is meant to be driven by another agent, and an
+    agent should not have to scrape ANSI-coloured columns to learn anything."""
+    print(json.dumps(payload, indent=1, default=str))
+
 def rule(title):
     print(f"\n\033[1m{title}\033[0m")
     print("─" * max(34, len(title)))
@@ -243,68 +248,100 @@ def cmd_init(args):
     warn("this key is only an identity for signing quotes — fund nothing to it")
 
 def cmd_doctor(args):
-    rule("doctor")
-    failures = 0
+    """One pass of checks, rendered either for a person or for a program."""
+    as_json = getattr(args, "json", False)
+    checks = []
 
+    def record(state, name, detail="", hint=""):
+        checks.append({"check": name, "state": state,
+                       "detail": detail, "hint": hint})
+
+    # --- environment
     v = sys.version_info
-    (ok if v >= (3, 9) else bad)(f"python {v.major}.{v.minor}.{v.micro}")
-    if v < (3, 9):
-        failures += 1
-        note("3.9 or newer is required for zoneinfo")
+    record("ok" if v >= (3, 9) else "fail", "python",
+           f"{v.major}.{v.minor}.{v.micro}",
+           "" if v >= (3, 9) else "3.9 or newer is required for zoneinfo")
 
     for mod, why in (("requests", "HTTP"), ("eth_account", "quote signing")):
         try:
             __import__(mod)
-            ok(f"{mod} present  ({why})")
+            record("ok", mod, f"present ({why})")
         except ImportError:
-            bad(f"{mod} missing  ({why})")
-            failures += 1
+            record("fail", mod, f"missing ({why})",
+                   "pip install eth-account requests")
 
+    # --- chain
     try:
         cid = int(_rpc("eth_chainId"), 16)
         blk = int(_rpc("eth_blockNumber"), 16)
         if cid == CHAIN_ID:
-            ok(f"chain {cid} reachable, head {blk:,}")
+            record("ok", "chain", f"{cid} reachable, head {blk:,}")
         else:
-            bad(f"chain id is {cid}, expected {CHAIN_ID}")
-            failures += 1
+            record("fail", "chain", f"chain id is {cid}, expected {CHAIN_ID}")
     except Exception as e:
-        bad(f"rpc unreachable: {e}")
-        failures += 1
+        record("fail", "chain", f"rpc unreachable: {e}")
 
+    # --- desk
     try:
         reg = _http(f"{DESK}/v1/pairs")
-        ok(f"registry served  {reg['count']} pairs against {reg['quote_asset']['symbol']}")
+        record("ok", "registry",
+               f"{reg['count']} pairs against {reg['quote_asset']['symbol']}")
         if reg["quote_asset"]["decimals"] != QUOTE_ASSET["decimals"]:
-            warn("served quote-asset decimals disagree with the built-in constant")
+            record("warn", "quote_decimals",
+                   f"desk says {reg['quote_asset']['decimals']}, "
+                   f"kit says {QUOTE_ASSET['decimals']}",
+                   "update the kit before sizing anything")
     except Exception as e:
-        warn(f"registry unreachable ({e}) — demo still runs offline")
+        record("warn", "registry", f"unreachable ({e})",
+               "demo still runs offline")
 
     try:
         c = _http(f"{DESK}/v1/contracts")
-        (warn if not c.get("venue_live") else ok)(
-            "venue live" if c.get("venue_live") else "venue not live — the Book is unpublished")
+        live = bool(c.get("venue_live"))
+        record("ok" if live else "warn", "venue",
+               "live" if live else "not live — the Book is unpublished")
     except Exception:
-        warn("contracts endpoint unreachable")
-
-    ok(f"key present at {KEYFILE}") if os.path.exists(KEYFILE) else warn("no key yet — run: python quoter.py init")
-
-    from datetime import date
-    if CALENDAR_VERIFIED_THROUGH < date.today().isoformat():
-        warn(f"market calendar expired {CALENDAR_VERIFIED_THROUGH} — holidays after "
-             "that date are not modelled; update the kit")
-    else:
-        ok(f"market calendar good through {CALENDAR_VERIFIED_THROUGH} "
-           f"({len(HOLIDAYS)} holidays, {len(EARLY_CLOSES)} early closes)")
+        record("warn", "venue", "contracts endpoint unreachable")
 
     try:
         a = _http(f"{DESK}/v1/agents")
-        ok(f"desk presence  {a.get('agents_online', 0)} online, "
-           f"{a.get('agents_total', 0)} all time")
-        note("this kit never checks in on its own — run: python quoter.py checkin")
+        record("ok", "presence",
+               f"{a.get('agents_online', 0)} online, "
+               f"{a.get('agents_total', 0)} all time",
+               "this kit never checks in on its own — run: quoter.py checkin")
     except Exception:
-        warn("presence endpoint unreachable")
+        record("warn", "presence", "endpoint unreachable")
 
+    # --- local state
+    if os.path.exists(KEYFILE):
+        record("ok", "key", KEYFILE)
+    else:
+        record("warn", "key", "no key yet", "python quoter.py init")
+
+    from datetime import date
+    if CALENDAR_VERIFIED_THROUGH < date.today().isoformat():
+        record("warn", "calendar", f"expired {CALENDAR_VERIFIED_THROUGH}",
+               "holidays past that date are not modelled; update the kit")
+    else:
+        record("ok", "calendar",
+               f"good through {CALENDAR_VERIFIED_THROUGH} "
+               f"({len(HOLIDAYS)} holidays, {len(EARLY_CLOSES)} early closes)")
+
+    failures = sum(1 for c in checks if c["state"] == "fail")
+
+    if as_json:
+        emit({"ok": failures == 0,
+              "failures": failures,
+              "ready": failures == 0,
+              "checks": checks})
+        sys.exit(1 if failures else 0)
+
+    rule("doctor")
+    render = {"ok": ok, "warn": warn, "fail": bad}
+    for c in checks:
+        render[c["state"]](f"{c['check']}  {c['detail']}".rstrip())
+        if c["hint"]:
+            note(c["hint"])
     print()
     if failures:
         bad(f"{failures} blocking problem(s)")
@@ -312,8 +349,17 @@ def cmd_doctor(args):
     ok("ready to run: python quoter.py demo")
 
 def cmd_session(args):
-    rule("session")
     s = session_state()
+    if getattr(args, "json", False):
+        return emit({
+            "open": s["open"],
+            "new_york": s["ny"],
+            "minutes_until_change": s["minutes_until_change"],
+            "human_until": human_minutes(s["minutes_until_change"]),
+            "early_close": s["early_close"],
+            "closed_because": s["closed_because"],
+        })
+    rule("session")
     if s["open"]:
         ok(f"exchange open — New York {s['ny']}"
            + (" (shortened session, closes 13:00)" if s.get("early_close") else ""))
@@ -326,11 +372,22 @@ def cmd_session(args):
         note("tokens still settle; nothing is setting a reference price")
 
 def cmd_pairs(args):
-    rule("pairs")
     try:
         reg = _http(f"{DESK}/v1/pairs" + (f"?tier={args.tier}" if args.tier else ""))
     except Exception as e:
+        if getattr(args, "json", False):
+            emit({"ok": False, "error": str(e)})
+            sys.exit(1)
         die(f"could not read the registry: {e}")
+
+    if getattr(args, "json", False):
+        return emit({
+            "ok": True,
+            "count": reg["count"],
+            "quote_asset": reg["quote_asset"],
+            "pairs": reg["pairs"][: args.limit],
+        })
+    rule("pairs")
     print(f"  {reg['count']} pairs · quote asset "
           f"{reg['quote_asset']['symbol']} ({reg['quote_asset']['decimals']} decimals)\n")
     print(f"  {'PAIR':<14}{'TIER':<9}{'HOLDERS':>9}  NAME")
@@ -343,7 +400,9 @@ def cmd_pairs(args):
 
 def cmd_demo(args):
     """One simulated evening. No network, no capital, no venue."""
-    rule("demo — simulated evening")
+    quiet = getattr(args, "json", False)
+    if not quiet:
+        rule("demo — simulated evening")
     rnd = random.Random(args.seed)
 
     sym = args.symbol.upper()
@@ -358,9 +417,10 @@ def cmd_demo(args):
     tape = []
 
     half_bps = args.spread_bps / 2.0
-    print(f"  {sym}/USDG · reference {ref:.2f} · half-spread {half_bps:.1f} bps "
-          f"· {args.ticks} ticks · seed {args.seed}\n")
-    print(f"  {'TICK':>5}  {'FAIR':>8} {'BID':>8} {'ASK':>8}  {'EVENT':<11}{'INV':>7}{'PNL':>9}")
+    if not quiet:
+        print(f"  {sym}/USDG · reference {ref:.2f} · half-spread {half_bps:.1f} bps "
+              f"· {args.ticks} ticks · seed {args.seed}\n")
+        print(f"  {'TICK':>5}  {'FAIR':>8} {'BID':>8} {'ASK':>8}  {'EVENT':<11}{'INV':>7}{'PNL':>9}")
 
     for t in range(1, args.ticks + 1):
         # the tape drifts; occasionally a headline arrives
@@ -385,8 +445,9 @@ def cmd_demo(args):
             cash += inv * ref
             inv = 0.0
             halted = t
-            print(f"  {t:>5}  {ref:>8.2f} {'':>8} {'':>8}  "
-                  f"{'LOSS LIMIT':<11}{inv:>7.2f}{cash:>9.3f}")
+            if not quiet:
+                print(f"  {t:>5}  {ref:>8.2f} {'':>8} {'':>8}  "
+                      f"{'LOSS LIMIT':<11}{inv:>7.2f}{cash:>9.3f}")
             break
 
         if headline:
@@ -411,8 +472,9 @@ def cmd_demo(args):
                     if room <= 1e-9:
                         capped += 1
                         pnl_mark = cash + inv * ref
-                        print(f"  {t:>5}  {ref:>8.2f} {bid:>8.2f} {ask:>8.2f}  "
-                              f"{'capped':<11}{inv:>7.2f}{pnl_mark:>9.3f}")
+                        if not quiet:
+                            print(f"  {t:>5}  {ref:>8.2f} {bid:>8.2f} {ask:>8.2f}  "
+                                  f"{'capped':<11}{inv:>7.2f}{pnl_mark:>9.3f}")
                         continue
                     if qty > room:
                         qty = round(room, 3)
@@ -436,12 +498,36 @@ def cmd_demo(args):
                 tape.append((t, side, px, qty, edge, drift, fee))
 
         pnl_mark = cash + inv * ref
-        if t % max(1, args.ticks // 18) == 0 or event != "—":
+        if not quiet and (t % max(1, args.ticks // 18) == 0 or event != "—"):
             print(f"  {t:>5}  {ref:>8.2f} {bid:>8.2f} {ask:>8.2f}  {event:<11}"
                   f"{inv:>7.2f}{pnl_mark:>9.3f}")
 
     net = gross - adverse - costs
     mark = cash + inv * ref
+
+    if quiet:
+        return emit({
+            "ok": True,
+            "symbol": sym,
+            "seed": args.seed,
+            "ticks": args.ticks,
+            "fills": fills,
+            "pulls": pulls,
+            "capped": capped,
+            "halted_at_tick": halted,
+            "attribution": {
+                "half_spread": round(gross, 6),
+                "adverse_selection": round(-adverse, 6),
+                "fees": round(-costs, 6),
+                "net": round(net, 6),
+                "net_per_fill": round(net / fills, 6) if fills else None,
+            },
+            "inventory_left": round(inv, 6),
+            "mark_to_reference": round(mark, 6),
+            "limits": {"inventory_cap": args.inventory_cap,
+                       "loss_limit": args.loss_limit},
+            "note": "synthetic tape, synthetic fills",
+        })
 
     rule("attribution")
     w = 30
@@ -519,14 +605,20 @@ def main():
     s.set_defaults(fn=cmd_init)
 
     s = sub.add_parser("doctor", help="check the environment against the live chain")
+    s.add_argument("--json", action="store_true",
+                   help="machine-readable output")
     s.set_defaults(fn=cmd_doctor)
 
     s = sub.add_parser("session", help="session clock")
+    s.add_argument("--json", action="store_true",
+                   help="machine-readable output")
     s.set_defaults(fn=cmd_session)
 
     s = sub.add_parser("pairs", help="list the served registry")
     s.add_argument("--tier", choices=["core", "active", "tail"])
     s.add_argument("--limit", type=int, default=20)
+    s.add_argument("--json", action="store_true",
+                   help="machine-readable output")
     s.set_defaults(fn=cmd_pairs)
 
     s = sub.add_parser("demo", help="one simulated evening")
@@ -548,6 +640,8 @@ def main():
     s.add_argument("--loss-limit", type=float, default=25.0,
                    help="flatten and stop for the night at this mark-to-reference "
                         "loss in USDG (0 disables)")
+    s.add_argument("--json", action="store_true",
+                   help="machine-readable output")
     s.set_defaults(fn=cmd_demo)
 
     s = sub.add_parser("checkin", help="announce this agent on the public desk")

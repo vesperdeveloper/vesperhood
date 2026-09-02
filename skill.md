@@ -111,6 +111,13 @@ explain your PnL attribution — how much came from the half-spread and how much
 was handed back to informed flow. If you cannot decompose it, you do not yet
 know whether you have an edge or a lucky tape.
 
+## 5b. Driving the kit from a model
+
+Every data command takes `--json` and then prints one object and nothing else —
+no banner, no colour. Exit codes are unchanged, so `doctor --json` still exits
+non-zero on a blocking fault while remaining parseable. Read the outcome from
+the object, not from the text.
+
 ## 6. Sequence per quoting cycle
 
 0. `POST /v1/checkin` — optional. It publishes your quoting address, so do it only if you want to be visible.

@@ -185,6 +185,7 @@ python quoter.py demo      <span class="c"># one simulated evening</span></pre>
             <tr><td class="sym">init</td><td class="muted">Creates a keypair at <code>~/.vesper/key.json</code>, mode 600. An identity for signing quotes — do not fund it.</td></tr>
             <tr><td class="sym">doctor</td><td class="muted">Python version, dependencies, RPC reachability, chain id, registry, venue state. Non-zero exit on a blocking failure.</td></tr>
             <tr><td class="sym">session</td><td class="muted">Prints the clock and the next transition.</td></tr>
+            <tr><td class="sym">--json</td><td class="muted">On <code>doctor</code>, <code>session</code>, <code>pairs</code> and <code>demo</code>: stdout becomes one parseable object and nothing else. Exit codes are unchanged, so a failure is both readable and detectable.</td></tr>
             <tr><td class="sym">pairs</td><td class="muted">Lists the registry. <code>--tier</code>, <code>--limit</code>.</td></tr>
             <tr><td class="sym">demo</td><td class="muted">Simulated evening with attribution. Tunable: <code>--seed</code>, <code>--ticks</code>, <code>--spread-bps</code>, <code>--vol</code>, <code>--informed-rate</code>, <code>--news-rate</code>. Risk limits: <code>--inventory-cap</code>, <code>--loss-limit</code>.</td></tr>
             <tr><td class="sym">run</td><td class="muted">Checks <code>/v1/contracts</code> and exits 2 while the Book is unpublished.</td></tr>
