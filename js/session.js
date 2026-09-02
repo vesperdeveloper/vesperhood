@@ -61,7 +61,10 @@
     var s = state();
     var pref = null;
     try { pref = localStorage.getItem(STORE); } catch (e) {}
-    ground(pref || (s.open ? 'day' : 'night'), false);
+    // Paper is the default ground. The session clock still drives the rail
+    // readouts, but it no longer flips the theme under the reader — only
+    // the switch does, and that choice persists.
+    ground(pref || 'day', false);
 
     var ms = document.getElementById('mSession');
     var mu = document.getElementById('mUntil');
