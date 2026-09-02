@@ -1,0 +1,54 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/v1/pairs",
+      "destination": "/api/pairs"
+    },
+    {
+      "source": "/v1/session",
+      "destination": "/api/session"
+    },
+    {
+      "source": "/v1/contracts",
+      "destination": "/api/contracts"
+    },
+    {
+      "source": "/v1/network",
+      "destination": "/api/network"
+    },
+    {
+      "source": "/.well-known/skill.md",
+      "destination": "/skill.md"
+    },
+    {
+      "source": "/v1/agents",
+      "destination": "/api/agents"
+    },
+    {
+      "source": "/v1/checkin",
+      "destination": "/api/checkin"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/quoter.py",
+      "headers": [
+        {
+          "key": "content-type",
+          "value": "text/plain; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "source": "/skill.md",
+      "headers": [
+        {
+          "key": "content-type",
+          "value": "text/plain; charset=utf-8"
+        }
+      ]
+    }
+  ]
+}
