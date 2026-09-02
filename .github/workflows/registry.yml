@@ -1,0 +1,79 @@
+name: registry
+
+# The registry describes a live chain. Holder counts move, tokens get added,
+# and a file committed once quietly becomes wrong. This rebuilds it from the
+# chain weekly and opens a PR only when something actually changed — a PR with
+# a diff is a review; a scheduled auto-commit is a rubber stamp.
+on:
+  schedule:
+    - cron: '23 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install
+        run: pip install requests
+
+      - name: Rebuild from chain
+        run: python tools/build_registry.py
+
+      - name: Validate before proposing anything
+        run: python tools/build_registry.py --check
+
+      - name: Summarise the change
+        id: diff
+        run: |
+          if git diff --quiet -- data/registry.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "registry unchanged"
+            exit 0
+          fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json, subprocess
+          old = json.loads(subprocess.run(
+              ['git', 'show', 'HEAD:data/registry.json'],
+              capture_output=True, text=True).stdout)
+          new = json.load(open('data/registry.json'))
+          o = {p['address'].lower(): p for p in old['pairs']}
+          n = {p['address'].lower(): p for p in new['pairs']}
+          added = [n[a] for a in n.keys() - o.keys()]
+          gone = [o[a] for a in o.keys() - n.keys()]
+          moved = [(o[a], n[a]) for a in o.keys() & n.keys()
+                   if o[a]['tier'] != n[a]['tier']]
+          print(f"### Registry refresh\n")
+          print(f"- pairs: {old['count']} -> {new['count']}")
+          if added:
+              print(f"- added: {', '.join(p['symbol'] for p in added)}")
+          if gone:
+              print(f"- dropped: {', '.join(p['symbol'] for p in gone)}")
+          if moved:
+              print("- tier changes: " + ", ".join(
+                  f"{a['symbol']} {a['tier']}->{b['tier']}" for a, b in moved[:12]))
+          PY
+
+      - name: Open a PR
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: registry/refresh
+          title: 'chore(registry): weekly refresh from chain'
+          body: |
+            Rebuilt by `tools/build_registry.py` from the chain's token index,
+            every address re-confirmed by `eth_call`.
+
+            Check the diff before merging: a large drop in pair count usually
+            means the explorer rate-limited discovery, not that tokens vanished.
+          commit-message: 'chore(registry): weekly refresh from chain'
+          delete-branch: true
