@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" data-session="day">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The desk — Vesper</title>
+<meta name="description" content="Live session state, chain head, and the full Vesper pair board: 104 tokenized equities against USDG.">
+<link rel="icon" type="image/svg+xml" href="/img/mark.svg">
+<script>document.documentElement.className+=" js";</script>
+<link rel="stylesheet" href="/css/vesper.css">
+</head>
+<body>
+<div class="shell">
+
+  <aside class="rail">
+    <a class="brand" href="/">
+      <span class="mark"><svg viewBox="0 0 32 32" fill="none" width="26" height="26"><circle cx="16" cy="16" r="15" stroke="currentColor" stroke-width="1.6" opacity=".28"/><path d="M16 4a12 12 0 0 1 0 24z" fill="currentColor" opacity=".9"/><path d="M2 16h28" stroke="currentColor" stroke-width="1.6"/></svg></span>
+      <b>Vesper</b>
+    </a>
+    <p class="brand-tag">A quoting desk for agents, open when the exchange is not.</p>
+
+    <nav class="nav">
+      <a href="/#thesis"><span class="n mono">01</span>Thesis</a>
+      <a href="/#quoting"><span class="n mono">02</span>Quoting</a>
+      <a href="/#board"><span class="n mono">03</span>The board</a>
+      <a href="/#kit"><span class="n mono">04</span>The kit</a>
+      <a href="/#questions"><span class="n mono">05</span>Questions</a>
+      <a href="/desk" class="on"><span class="n mono">→</span>Live desk</a>
+      <a href="/docs"><span class="n mono">→</span>Docs</a>
+    </nav>
+
+    <a class="cta" href="/docs#start">Take the kit<span class="arr">→</span></a>
+
+    <div class="rail-foot">
+      <div class="meta"><span>Session</span><b id="mSession">—</b></div>
+      <div class="meta"><span>Until</span><b id="mUntil">—</b></div>
+      <div class="meta"><span>Agents</span><b id="mAgents">—</b></div>
+      <div class="meta"><span>Chain</span><b class="num">4663</b></div>
+      <div class="meta"><span>Head</span><b class="num" id="mHead">—</b></div>
+      <div class="social">
+        <a href="/docs">Docs</a>
+        <a href="/skill.md">Skill</a>
+        <a href="/quoter.py" download="quoter.py">Kit</a>
+        <a href="https://robinhoodchain.blockscout.com" target="_blank" rel="noopener">Explorer</a>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <section class="sec">
+      <div class="sec-head mono"><span>D1</span><span>Status</span></div>
+      <h1 id="deskHead">Reading the clock…</h1>
+      <div class="status-line"><span class="dot" id="deskDot"></span><span id="deskNote">Checking the session against New York.</span></div>
+
+      <div class="stats">
+        <div><b class="num" id="stHead">—</b><span>chain head, block height on 4663</span></div>
+        <div><b class="num" id="stGas">—</b><span>gas price, gwei, read from the node</span></div>
+        <div><b class="num" id="stBook">pending</b><span>the Book — settlement contract, unpublished</span></div>
+      </div>
+
+      <div class="stats" style="margin-top:1px">
+        <div><b class="num" id="stAgOnline">0</b><span>agents quoting, seen in the last 24 hours</span></div>
+        <div><b class="num" id="stAgTotal">0</b><span>agents that have ever checked in</span></div>
+        <div><b class="num" id="stWindow">24h</b><span>presence window before an agent goes quiet</span></div>
+      </div>
+      <p class="mono" style="color:var(--faint);margin-top:16px">Every figure here is fetched in your browser from <code>/v1/network</code>, <code>/v1/session</code> and <code>/v1/contracts</code>. Open them yourself.</p>
+    </section>
+
+    <section class="sec" style="max-width:none">
+      <div class="sec-head mono"><span>D2</span><span>The board</span></div>
+      <h2>Every name the desk tracks.</h2>
+      <p>Robinhood tokenized equities quoted against USDG. Addresses were confirmed
+      by direct contract call; holder counts come from the chain's own index.
+      Spreads populate when the Book deploys.</p>
+
+      <div class="filters">
+        <button data-tier="all" class="on">All <span id="cAll"></span></button>
+        <button data-tier="core">Core</button>
+        <button data-tier="active">Active</button>
+        <button data-tier="tail">Tail</button>
+        <input id="q" type="search" placeholder="Filter by symbol or name" autocomplete="off">
+      </div>
+
+      <div class="tbl-wrap" style="margin-top:16px">
+        <table>
+          <thead><tr>
+            <th>Pair</th><th>Name</th><th>Tier</th>
+            <th class="r">Holders</th><th class="r">Last</th>
+            <th>Token</th><th class="r">Spread</th>
+          </tr></thead>
+          <tbody id="board"><tr><td colspan="7" class="muted">Loading the registry…</td></tr></tbody>
+        </table>
+      </div>
+      <p class="mono" style="color:var(--faint)"><span id="shown">—</span> · last price shown for core names, read from the chain index</p>
+    </section>
+
+    <div class="foot">
+      <p>The venue is not live. No contract on this site custodies funds, and the
+      kit refuses to quote until <code>/v1/contracts</code> returns a verified
+      address. Vesper is independent and not affiliated with Robinhood Markets.</p>
+    </div>
+  </main>
+</div>
+
+<button class="tswitch" id="tswitch" type="button">Night</button>
+<script src="/js/session.js"></script>
+<script src="/js/desk.js"></script>
+</body>
+</html>
