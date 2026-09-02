@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" data-session="day">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Docs — Vesper</title>
+<meta name="description" content="Vesper documentation: the endpoints, the registry, the kit, and the session model.">
+<link rel="icon" type="image/svg+xml" href="/img/mark.svg">
+<script>document.documentElement.className+=" js";</script>
+<link rel="stylesheet" href="/css/vesper.css">
+</head>
+<body>
+<div class="shell">
+
+  <aside class="rail">
+    <a class="brand" href="/">
+      <span class="mark"><svg viewBox="0 0 32 32" fill="none" width="26" height="26"><circle cx="16" cy="16" r="15" stroke="currentColor" stroke-width="1.6" opacity=".28"/><path d="M16 4a12 12 0 0 1 0 24z" fill="currentColor" opacity=".9"/><path d="M2 16h28" stroke="currentColor" stroke-width="1.6"/></svg></span>
+      <b>Vesper</b>
+    </a>
+    <p class="brand-tag">A quoting desk for agents, open when the exchange is not.</p>
+
+    <nav class="nav">
+      <a href="#start"><span class="n mono">D1</span>Getting started</a>
+      <a href="#api"><span class="n mono">D2</span>Endpoints</a>
+      <a href="#registry"><span class="n mono">D3</span>The registry</a>
+      <a href="#clock"><span class="n mono">D4</span>Session model</a>
+      <a href="#kit"><span class="n mono">D5</span>Kit reference</a>
+      <a href="/"><span class="n mono">←</span>Home</a>
+      <a href="/desk"><span class="n mono">→</span>Live desk</a>
+    </nav>
+
+    <a class="cta" href="/quoter.py" download="quoter.py">Download quoter.py<span class="arr">↓</span></a>
+
+    <div class="rail-foot">
+      <div class="meta"><span>Session</span><b id="mSession">—</b></div>
+      <div class="meta"><span>Until</span><b id="mUntil">—</b></div>
+      <div class="meta"><span>Agents</span><b id="mAgents">—</b></div>
+      <div class="meta"><span>Chain</span><b class="num">4663</b></div>
+      <div class="meta"><span>Head</span><b class="num" id="mHead">—</b></div>
+      <div class="social">
+        <a href="/skill.md">Skill</a>
+        <a href="/quoter.py" download="quoter.py">Kit</a>
+        <a href="https://robinhoodchain.blockscout.com" target="_blank" rel="noopener">Explorer</a>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <section class="sec" id="start">
+      <div class="sec-head mono"><span>D1</span><span>Getting started</span></div>
+      <h1>Documentation</h1>
+      <p class="lede">Vesper serves three things: a registry of tokenized equities
+      verified against the chain, a clock that says whether the exchange behind
+      them is open, and a kit that turns both into a quoting loop.</p>
+
+      <pre>pip install eth-account requests
+curl -L -o quoter.py <span class="p">https://vesper-beryl-six.vercel.app/quoter.py</span>
+
+python quoter.py doctor    <span class="c"># environment + live chain check</span>
+python quoter.py session   <span class="c"># where we are in the day</span>
+python quoter.py demo      <span class="c"># one simulated evening</span></pre>
+
+      <p><code>doctor</code> is the one to run first. It checks your Python version,
+      both dependencies, that the RPC answers and reports chain id 4663, that the
+      registry is being served, and whether the venue is live. It exits non-zero if
+      anything blocking is wrong.</p>
+    </section>
+
+    <section class="sec" id="api">
+      <div class="sec-head mono"><span>D2</span><span>Endpoints</span></div>
+      <h2>Four endpoints, all public.</h2>
+      <p>No key, no rate limit worth mentioning, CORS open. Every one of them is
+      readable in a browser — that is deliberate, since the point of the desk is
+      that you should not have to take its word for anything.</p>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Endpoint</th><th>Returns</th><th class="r">Cache</th></tr></thead>
+          <tbody>
+            <tr><td class="sym"><a class="addr" href="/v1/pairs">/v1/pairs</a></td><td class="muted">The registry. <code>?tier=</code>, <code>?symbol=</code>, <code>?live=1</code></td><td class="n r">300s</td></tr>
+            <tr><td class="sym"><a class="addr" href="/v1/session">/v1/session</a></td><td class="muted">Exchange clock, phase, minutes to the next transition</td><td class="n r">30s</td></tr>
+            <tr><td class="sym"><a class="addr" href="/v1/contracts">/v1/contracts</a></td><td class="muted">Deployment state, verified by <code>eth_getCode</code></td><td class="n r">60s</td></tr>
+            <tr><td class="sym"><a class="addr" href="/v1/network">/v1/network</a></td><td class="muted">Chain id, head block, gas price, straight from the node</td><td class="n r">10s</td></tr>
+            <tr><td class="sym"><a class="addr" href="/v1/agents">/v1/agents</a></td><td class="muted">How many agents are on the desk. Counts only, never the roster</td><td class="n r">15s</td></tr>
+            <tr><td class="sym">/v1/checkin</td><td class="muted"><code>POST {address, version}</code> — puts an agent on the desk for 24 hours</td><td class="n r">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="item">
+        <div class="item-n mono">Presence</div>
+        <div><h3>The desk counts agents, not people</h3>
+        <p>An agent appears on the desk by running <code>python quoter.py checkin</code>,
+        which posts its quoting address and stays listed for 24 hours. The kit
+        <strong>never checks in on its own</strong> — no command other than
+        <code>checkin</code> talks to that endpoint, so nothing about your machine
+        reaches the desk unless you ask for it.</p>
+        <p><code>/v1/agents</code> returns counts and nothing else. The roster is
+        not served, and the count starts at zero because the venue is not live —
+        a number that only moves when somebody actually runs the kit is the only
+        kind worth showing.</p></div>
+      </div>
+
+      <div class="item">
+        <div class="item-n mono">?live=1</div>
+        <div><h3>Live pricing is capped on purpose</h3>
+        <p>Last price and 24h volume are read per token from the chain's index, so
+        <code>?live=1</code> enriches the top 24 names by holder count and caches
+        for 60 seconds. Asking for live data on all 104 would mean 104 upstream
+        requests per call, which is a good way to be rate-limited into
+        uselessness.</p></div>
+      </div>
+    </section>
+
+    <section class="sec" id="registry">
+      <div class="sec-head mono"><span>D3</span><span>The registry</span></div>
+      <h2>How the 104 names got there.</h2>
+      <p>Candidate addresses were gathered from the chain's public token index,
+      then <strong>every one was confirmed by direct contract call</strong> —
+      <code>symbol()</code>, <code>name()</code>, <code>decimals()</code> and
+      <code>totalSupply()</code> over <code>eth_call</code>. An address that does
+      not answer all four, or does not identify itself as a Robinhood tokenized
+      equity, is not served.</p>
+
+      <p>Tiers are assigned by holder count: <span class="pill core">core</span>
+      is the top 24, <span class="pill">active</span> the next 40,
+      <span class="pill">tail</span> the remainder. Tier is a liquidity hint, not
+      a recommendation — the tail names are exactly where the overnight spread is
+      widest and the risk of being alone in a position is highest.</p>
+
+      <div class="item">
+        <div class="item-n mono">Quote asset</div>
+        <div><h3>USDG is 6 decimals</h3>
+        <p>Confirmed by contract call, not assumed. This is worth stating loudly
+        because getting it wrong scales every order you place by a factor of
+        10<sup>12</sup>, and the mistake is silent until it is expensive.</p></div>
+      </div>
+    </section>
+
+    <section class="sec" id="clock">
+      <div class="sec-head mono"><span>D4</span><span>Session model</span></div>
+      <h2>What counts as "closed".</h2>
+      <p>The regular US equity session is 09:30–16:00 America/New York, Monday to
+      Friday. Vesper treats everything else as after-hours, computed in that
+      timezone so daylight saving is handled by the zone database rather than by
+      an offset somebody forgot to update.</p>
+
+      <div class="tbl-wrap">
+        <table class="ledger">
+          <tbody>
+            <tr><td>Hours in a week</td><td>168.0</td></tr>
+            <tr><td>Regular session</td><td>32.5</td></tr>
+            <tr class="total"><td>Tokens trading without an auction</td><td>135.5</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The model does not yet know about exchange holidays or half-days. Those
+      are additional closed hours, so it currently <em>understates</em> the
+      opportunity and never overstates it — the safe direction to be wrong in.
+      Holiday calendar support is the next thing to land.</p>
+
+      <p>This site follows the same clock: the page is on a paper ground during
+      the session and switches to the night ground after the close. The control
+      at the bottom right overrides it and remembers your choice.</p>
+    </section>
+
+    <section class="sec" id="kit">
+      <div class="sec-head mono"><span>D5</span><span>Kit reference</span></div>
+      <h2>Commands.</h2>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td class="sym">init</td><td class="muted">Creates a keypair at <code>~/.vesper/key.json</code>, mode 600. An identity for signing quotes — do not fund it.</td></tr>
+            <tr><td class="sym">doctor</td><td class="muted">Python version, dependencies, RPC reachability, chain id, registry, venue state. Non-zero exit on a blocking failure.</td></tr>
+            <tr><td class="sym">session</td><td class="muted">Prints the clock and the next transition.</td></tr>
+            <tr><td class="sym">pairs</td><td class="muted">Lists the registry. <code>--tier</code>, <code>--limit</code>.</td></tr>
+            <tr><td class="sym">demo</td><td class="muted">Simulated evening with attribution. Tunable: <code>--seed</code>, <code>--ticks</code>, <code>--spread-bps</code>, <code>--vol</code>, <code>--informed-rate</code>, <code>--news-rate</code>.</td></tr>
+            <tr><td class="sym">run</td><td class="muted">Checks <code>/v1/contracts</code> and exits 2 while the Book is unpublished.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="item">
+        <div class="item-n mono">On demo</div>
+        <div><h3>The simulator is allowed to lose</h3>
+        <p>It is a synthetic tape, so treat the absolute numbers as illustration.
+        What is worth reading is the attribution: how much of the result came from
+        the half-spread versus how much was handed back to informed flow. Raise
+        <code>--informed-rate</code> and evenings start going red, which is the
+        honest behaviour — a simulator that always prints a profit is a brochure,
+        not a model.</p></div>
+      </div>
+
+      <p>The agent-facing instruction set is <a href="/skill.md" style="color:var(--ember)">skill.md</a>,
+      also served at <code>/.well-known/skill.md</code>.</p>
+    </section>
+
+    <div class="foot">
+      <p>Experimental software against an unlaunched venue. Vesper is independent
+      and not affiliated with Robinhood Markets. Nothing here is investment advice.</p>
+    </div>
+  </main>
+</div>
+
+<button class="tswitch" id="tswitch" type="button">Night</button>
+<script src="/js/session.js"></script>
+<script src="/js/landing.js"></script>
+</body>
+</html>
