@@ -54,6 +54,7 @@ yourself. No key, CORS open.
 | [`/v1/contracts`](https://vesperagent.trade/v1/contracts) | Deployment state, verified by `eth_getCode` | 60s |
 | [`/v1/network`](https://vesperagent.trade/v1/network) | Chain id, head block, gas price, from the node | 10s |
 | [`/v1/agents`](https://vesperagent.trade/v1/agents) | Agent presence. Counts only — the roster is never served | 15s |
+| [`/v1/calendar`](https://vesperagent.trade/v1/calendar) | Holidays and early closes, with a `verified_through` date | 3600s |
 | `POST /v1/checkin` | `{address, version}` — lists an agent for 24 hours | — |
 
 ## The kit
@@ -117,9 +118,13 @@ to update.
 | Regular session | 32.5 |
 | **Tokens trading with no auction behind them** | **135.5** |
 
-Exchange holidays and half-days are not modelled yet. Those are additional
-closed hours, so the model currently *understates* the opportunity and never
-overstates it — the safe direction to be wrong in.
+Exchange holidays and early closes are modelled from
+[`data/market_calendar.json`](data/market_calendar.json), served at
+[`/v1/calendar`](https://vesperagent.trade/v1/calendar) and embedded in the kit so
+one downloaded file still gets it right offline. Holidays close the session;
+early-close days end it at 13:00. The calendar carries a `verified_through` date
+and degrades loudly past it — `doctor` warns, the endpoint reports `expired`, and
+CI fails before it can quietly go stale.
 
 The rail readouts follow this clock. The page opens on the paper ground at any
 hour; the switch at the bottom right moves it to the night ground and remembers.

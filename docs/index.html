@@ -157,10 +157,16 @@ python quoter.py demo      <span class="c"># one simulated evening</span></pre>
         </table>
       </div>
 
-      <p>The model does not yet know about exchange holidays or half-days. Those
-      are additional closed hours, so it currently <em>understates</em> the
-      opportunity and never overstates it — the safe direction to be wrong in.
-      Holiday calendar support is the next thing to land.</p>
+      <p>Exchange holidays and early closes <em>are</em> modelled. The calendar
+      lives in <code>data/market_calendar.json</code>, is served at
+      <a class="addr" href="/v1/calendar">/v1/calendar</a>, and is embedded in the
+      kit so a single downloaded file still gets the answer right with no network.
+      Holidays close the session outright; early-close days end it at 13:00 rather
+      than 16:00.</p>
+      <p>The calendar is verified through a stated date and no further. Past that
+      point it degrades honestly rather than silently: <code>doctor</code> warns,
+      the endpoint reports <code>expired: true</code>, and CI fails while there is
+      still time to extend it.</p>
 
       <p>The rail readouts follow this clock — session, time to the next
       transition, agents on the desk. The page itself does not: it opens on the

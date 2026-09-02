@@ -29,6 +29,10 @@
     {
       "source": "/v1/checkin",
       "destination": "/api/checkin"
+    },
+    {
+      "source": "/v1/calendar",
+      "destination": "/api/calendar"
     }
   ],
   "headers": [

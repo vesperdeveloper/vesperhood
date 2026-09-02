@@ -34,6 +34,40 @@ QUOTE_ASSET = {"symbol": "USDG",
 KEYFILE = os.path.expanduser("~/.vesper/key.json")
 QUOTE_TTL = (15, 60)
 
+# US equity market closures, observed dates. Embedded rather than fetched so a
+# single downloaded file still models the calendar with no network. Verified
+# through 2027-12-31; `doctor` warns once it runs out, and the
+# desk serves the authoritative copy at GET /v1/calendar.
+CALENDAR_VERIFIED_THROUGH = "2027-12-31"
+EARLY_CLOSE_HOUR = 13
+HOLIDAYS = {
+    "2026-01-01": "New Year's Day",
+    "2026-01-19": "Martin Luther King Jr. Day",
+    "2026-02-16": "Washington's Birthday",
+    "2026-04-03": "Good Friday",
+    "2026-05-25": "Memorial Day",
+    "2026-06-19": "Juneteenth",
+    "2026-07-03": "Independence Day (observed)",
+    "2026-09-07": "Labor Day",
+    "2026-11-26": "Thanksgiving Day",
+    "2026-12-25": "Christmas Day",
+    "2027-01-01": "New Year's Day",
+    "2027-01-18": "Martin Luther King Jr. Day",
+    "2027-02-15": "Washington's Birthday",
+    "2027-03-26": "Good Friday",
+    "2027-05-31": "Memorial Day",
+    "2027-06-18": "Juneteenth (observed)",
+    "2027-07-05": "Independence Day (observed)",
+    "2027-09-06": "Labor Day",
+    "2027-11-25": "Thanksgiving Day",
+    "2027-12-24": "Christmas Day (observed)",
+}
+EARLY_CLOSES = {
+    "2026-11-27": "Day after Thanksgiving",
+    "2026-12-24": "Christmas Eve",
+    "2027-11-26": "Day after Thanksgiving",
+}
+
 # ---------------------------------------------------------------- plumbing
 
 def _http(url, timeout=20):
@@ -75,31 +109,71 @@ def note(m):  print(f"    {m}")
 
 # ---------------------------------------------------------------- session
 
-def session_state(now=None):
-    """Regular US equity session: 09:30-16:00 America/New_York, Mon-Fri."""
+OPEN_MINUTE = 9 * 60 + 30
+CLOSE_MINUTE = 16 * 60
+
+
+def _ny(now=None):
     now = now or datetime.now(timezone.utc)
     try:
         from zoneinfo import ZoneInfo
-        ny = now.astimezone(ZoneInfo("America/New_York"))
+        return now.astimezone(ZoneInfo("America/New_York"))
     except Exception:
-        # No tzdata: fall back to a fixed -05:00 and say so.
+        # No tzdata on this box. -05:00 is right for standard time and an hour
+        # off during DST; session() flags this so nobody trusts it blindly.
         from datetime import timedelta
-        ny = now.astimezone(timezone(timedelta(hours=-5)))
+        return now.astimezone(timezone(timedelta(hours=-5)))
+
+
+def is_trading_day(d):
+    """Weekday that is not a full-day market holiday."""
+    return d.weekday() <= 4 and d.isoformat() not in HOLIDAYS
+
+
+def close_minute_for(d):
+    """Most days close at 16:00; a handful close early at 13:00."""
+    return (EARLY_CLOSE_HOUR * 60) if d.isoformat() in EARLY_CLOSES else CLOSE_MINUTE
+
+
+def session_state(now=None):
+    """Regular US equity session, holidays and early closes included.
+
+    09:30-16:00 America/New_York on trading days, 09:30-13:00 on early-close
+    days, shut on weekends and market holidays.
+    """
+    ny = _ny(now)
+    today = ny.date()
     mins = ny.hour * 60 + ny.minute
-    weekday = ny.weekday() <= 4          # Mon=0 .. Sun=6
-    is_open = weekday and 570 <= mins < 960
+    close = close_minute_for(today)
+
+    trading = is_trading_day(today)
+    is_open = trading and OPEN_MINUTE <= mins < close
+
     if is_open:
-        until = 960 - mins
+        until = close - mins
+    elif trading and mins < OPEN_MINUTE:
+        until = OPEN_MINUTE - mins
     else:
-        days = 0 if (weekday and mins < 570) else 1
-        if days == 1:
-            a = 1
-            while (ny.weekday() + a) % 7 in (5, 6):
-                a += 1
-            days = a
-        until = days * 1440 + 570 - mins
-    return {"open": is_open, "ny": ny.strftime("%a %H:%M"),
-            "minutes_until_change": until}
+        # walk forward to the next day the market actually opens
+        from datetime import timedelta
+        days = 1
+        while not is_trading_day(today + timedelta(days=days)):
+            days += 1
+            if days > 10:          # a closure this long means the calendar is wrong
+                break
+        until = days * 1440 + OPEN_MINUTE - mins
+
+    reason = None
+    if not trading:
+        reason = HOLIDAYS.get(today.isoformat()) or (
+            "Weekend" if today.weekday() > 4 else None)
+
+    return {"open": is_open,
+            "ny": ny.strftime("%a %H:%M"),
+            "minutes_until_change": until,
+            "early_close": today.isoformat() in EARLY_CLOSES,
+            "closed_because": reason}
+
 
 def human_minutes(m):
     if m < 60:
@@ -176,6 +250,14 @@ def cmd_doctor(args):
 
     ok(f"key present at {KEYFILE}") if os.path.exists(KEYFILE) else warn("no key yet — run: python quoter.py init")
 
+    from datetime import date
+    if CALENDAR_VERIFIED_THROUGH < date.today().isoformat():
+        warn(f"market calendar expired {CALENDAR_VERIFIED_THROUGH} — holidays after "
+             "that date are not modelled; update the kit")
+    else:
+        ok(f"market calendar good through {CALENDAR_VERIFIED_THROUGH} "
+           f"({len(HOLIDAYS)} holidays, {len(EARLY_CLOSES)} early closes)")
+
     try:
         a = _http(f"{DESK}/v1/agents")
         ok(f"desk presence  {a.get('agents_online', 0)} online, "
@@ -194,11 +276,13 @@ def cmd_session(args):
     rule("session")
     s = session_state()
     if s["open"]:
-        ok(f"exchange open — New York {s['ny']}")
+        ok(f"exchange open — New York {s['ny']}"
+           + (" (shortened session, closes 13:00)" if s.get("early_close") else ""))
         note(f"closes in {human_minutes(s['minutes_until_change'])}")
         note("reference price is live; the overnight edge is thin right now")
     else:
-        warn(f"exchange shut — New York {s['ny']}")
+        why = s.get("closed_because")
+        warn(f"exchange shut — New York {s['ny']}" + (f" ({why})" if why else ""))
         note(f"opens in {human_minutes(s['minutes_until_change'])}")
         note("tokens still settle; nothing is setting a reference price")
 
