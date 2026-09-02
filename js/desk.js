@@ -67,14 +67,21 @@
         '<td class="n r muted">at launch</td>';
       tb.appendChild(tr);
     });
+    tb.setAttribute('aria-busy', 'false');
     var s = document.getElementById('shown');
     if (s) s.textContent = 'showing ' + rows.length + ' of ' + all.length + ' pairs';
   }
 
   document.querySelectorAll('.filters button').forEach(function (b) {
     b.addEventListener('click', function () {
-      document.querySelectorAll('.filters button').forEach(function (x) { x.classList.remove('on'); });
+      document.querySelectorAll('.filters button').forEach(function (x) {
+        x.classList.remove('on');
+        // aria-pressed set once in markup and never updated is worse than absent:
+        // it tells a screen reader the opposite of what is on screen.
+        x.setAttribute('aria-pressed', 'false');
+      });
       b.classList.add('on');
+      b.setAttribute('aria-pressed', 'true');
       tier = b.getAttribute('data-tier');
       render();
     });
@@ -89,6 +96,9 @@
     render();
   }).catch(function () {
     var tb = document.getElementById('board');
-    if (tb) tb.innerHTML = '<tr><td colspan="7" class="muted">Registry unreachable.</td></tr>';
+    if (tb) {
+      tb.setAttribute('aria-busy', 'false');
+      tb.innerHTML = '<tr><td colspan="7" class="muted">Registry unreachable.</td></tr>';
+    }
   });
 })();

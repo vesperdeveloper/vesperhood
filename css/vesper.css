@@ -350,3 +350,21 @@ html.js .rv.in { opacity: 1; transform: none; }
   .lede { font-size: 16px; }
   .tswitch { right: 14px; bottom: 14px; }
 }
+
+/* ---------- skip link ---------- */
+
+.skip {
+  position: absolute; left: -9999px; top: 0; z-index: 100;
+  padding: 11px 18px; border-radius: 0 0 var(--radius) 0;
+  background: var(--ink); color: var(--paper);
+  font-size: 14px; font-weight: 500; text-decoration: none;
+}
+.skip:focus { left: 0; }
+
+/* A visible focus ring is not decoration on a page this quiet. */
+a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+.main:focus { outline: none; }

@@ -27,16 +27,17 @@
 <link rel="stylesheet" href="/css/vesper.css">
 </head>
 <body>
+<a class="skip" href="#content">Skip to content</a>
 <div class="shell">
 
-  <aside class="rail">
+  <aside class="rail" aria-label="Site">
     <a class="brand" href="/">
       <img class="mark" src="/img/logo.png" alt="" width="26" height="26">
       <b>Vesper</b>
     </a>
     <p class="brand-tag">A quoting desk for agents, open when the exchange is not.</p>
 
-    <nav class="nav">
+    <nav class="nav" aria-label="Sections">
       <a href="/#thesis"><span class="n mono">01</span>Thesis</a>
       <a href="/#quoting"><span class="n mono">02</span>Quoting</a>
       <a href="/#board"><span class="n mono">03</span>The board</a>
@@ -63,7 +64,7 @@
     </div>
   </aside>
 
-  <main class="main">
+  <main class="main" id="content" tabindex="-1">
 
     <section class="sec">
       <div class="sec-head mono"><span>D1</span><span>Status</span></div>
@@ -91,12 +92,12 @@
       by direct contract call; holder counts come from the chain's own index.
       Spreads populate when the Book deploys.</p>
 
-      <div class="filters">
-        <button data-tier="all" class="on">All <span id="cAll"></span></button>
-        <button data-tier="core">Core</button>
-        <button data-tier="active">Active</button>
-        <button data-tier="tail">Tail</button>
-        <input id="q" type="search" placeholder="Filter by symbol or name" autocomplete="off">
+      <div class="filters" role="group" aria-label="Filter the pair board">
+        <button data-tier="all" class="on" aria-label="Show all pairs" aria-pressed="true">All <span id="cAll"></span></button>
+        <button data-tier="core" aria-label="Show core tier only" aria-pressed="false">Core</button>
+        <button data-tier="active" aria-label="Show active tier only" aria-pressed="false">Active</button>
+        <button data-tier="tail" aria-label="Show tail tier only" aria-pressed="false">Tail</button>
+        <input id="q" type="search" placeholder="Filter by symbol or name" autocomplete="off" aria-label="Filter the pair board by symbol or name">
       </div>
 
       <div class="tbl-wrap" style="margin-top:16px">
@@ -106,10 +107,10 @@
             <th class="r">Holders</th><th class="r">Last</th>
             <th>Token</th><th class="r">Spread</th>
           </tr></thead>
-          <tbody id="board"><tr><td colspan="7" class="muted">Loading the registry…</td></tr></tbody>
+          <tbody id="board" aria-busy="true"><tr><td colspan="7" class="muted">Loading the registry…</td></tr></tbody>
         </table>
       </div>
-      <p class="mono" style="color:var(--faint)"><span id="shown">—</span> · last price shown for core names, read from the chain index</p>
+      <p class="mono" style="color:var(--faint)"><span id="shown" role="status" aria-live="polite">—</span> · last price shown for core names, read from the chain index</p>
     </section>
 
     <div class="foot">
@@ -120,7 +121,7 @@
   </main>
 </div>
 
-<button class="tswitch" id="tswitch" type="button">Night</button>
+<button class="tswitch" id="tswitch" type="button" aria-label="Switch between the paper and night grounds">Night</button>
 <script src="/js/session.js"></script>
 <script src="/js/desk.js"></script>
 </body>

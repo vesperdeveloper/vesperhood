@@ -53,7 +53,10 @@
   function ground(g, manual) {
     document.documentElement.setAttribute('data-session', g);
     var b = document.getElementById('tswitch');
-    if (b) b.textContent = g === 'night' ? 'Paper' : 'Night';
+    if (b) {
+      b.textContent = g === 'night' ? 'Paper' : 'Night';
+      b.setAttribute('aria-pressed', g === 'night' ? 'true' : 'false');
+    }
     if (manual) { try { localStorage.setItem(STORE, g); } catch (e) {} }
   }
 

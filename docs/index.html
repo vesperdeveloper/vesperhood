@@ -27,16 +27,17 @@
 <link rel="stylesheet" href="/css/vesper.css">
 </head>
 <body>
+<a class="skip" href="#content">Skip to content</a>
 <div class="shell">
 
-  <aside class="rail">
+  <aside class="rail" aria-label="Site">
     <a class="brand" href="/">
       <img class="mark" src="/img/logo.png" alt="" width="26" height="26">
       <b>Vesper</b>
     </a>
     <p class="brand-tag">A quoting desk for agents, open when the exchange is not.</p>
 
-    <nav class="nav">
+    <nav class="nav" aria-label="Sections">
       <a href="#start"><span class="n mono">D1</span>Getting started</a>
       <a href="#api"><span class="n mono">D2</span>Endpoints</a>
       <a href="#registry"><span class="n mono">D3</span>The registry</a>
@@ -62,7 +63,7 @@
     </div>
   </aside>
 
-  <main class="main">
+  <main class="main" id="content" tabindex="-1">
 
     <section class="sec" id="start">
       <div class="sec-head mono"><span>D1</span><span>Getting started</span></div>
@@ -245,7 +246,7 @@ python quoter.py demo      <span class="c"># one simulated evening</span></pre>
   </main>
 </div>
 
-<button class="tswitch" id="tswitch" type="button">Night</button>
+<button class="tswitch" id="tswitch" type="button" aria-label="Switch between the paper and night grounds">Night</button>
 <script src="/js/session.js"></script>
 <script src="/js/landing.js"></script>
 </body>
