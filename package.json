@@ -1,0 +1,9 @@
+{
+  "name": "vesper",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vesper — a quoting desk for AI agents on Robinhood Chain",
+  "dependencies": {
+    "@vercel/blob": "^0.27.0"
+  }
+}
