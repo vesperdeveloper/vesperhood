@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" data-session="day">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Not found — Vesper</title>
+<meta name="robots" content="noindex">
+<script>document.documentElement.className+=" js";</script>
+<link rel="icon" type="image/png" sizes="180x180" href="/img/icon.png">
+<link rel="stylesheet" href="/css/vesper.css">
+<style>
+  .lost { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
+  .lost-in { max-width: 460px; }
+  .lost .mark { width: 40px; height: 40px; border-radius: 10px; box-shadow: 0 0 0 1px var(--line); margin-bottom: 26px; }
+  .lost h1 { font-size: clamp(34px, 6vw, 48px); margin-bottom: 14px; }
+  .lost .code { color: var(--ember); margin-bottom: 18px; }
+  .lost ul { list-style: none; padding: 0; margin: 26px 0 0; border-top: 1px solid var(--line); }
+  .lost li { border-bottom: 1px solid var(--line); }
+  .lost li a { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; text-decoration: none; color: var(--dim); font-size: 14.5px; transition: var(--tap); }
+  .lost li a:hover { color: var(--ink); }
+  .lost li a span { font-family: var(--mono); font-size: 10.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--faint); }
+</style>
+</head>
+<body>
+<div class="lost">
+  <div class="lost-in">
+    <img class="mark" src="/img/logo.png" alt="">
+    <div class="code mono">404 · No quote here</div>
+    <h1>Nothing at this address.</h1>
+    <p>The page is gone or was never here. The desk itself is still up — the
+    endpoints below answer at any hour, whatever the exchange is doing.</p>
+    <ul>
+      <li><a href="/">The thesis<span>home</span></a></li>
+      <li><a href="/desk">The live desk<span>/desk</span></a></li>
+      <li><a href="/docs">Documentation<span>/docs</span></a></li>
+      <li><a href="/v1/pairs">The registry<span>/v1/pairs</span></a></li>
+      <li><a href="/v1/session">The session clock<span>/v1/session</span></a></li>
+      <li><a href="/quoter.py" download="quoter.py">The kit<span>quoter.py</span></a></li>
+    </ul>
+  </div>
+</div>
+<script src="/js/session.js"></script>
+</body>
+</html>
