@@ -70,29 +70,68 @@ EARLY_CLOSES = {
 
 # ---------------------------------------------------------------- plumbing
 
-def _http(url, timeout=20):
+RETRIES = 3
+BACKOFF = 0.6          # seconds, doubled each attempt
+
+def _requests():
     try:
         import requests
+        return requests
     except ImportError:
         die("requests is not installed. Run: pip install eth-account requests")
-    r = requests.get(url, timeout=timeout,
-                     headers={"accept": "application/json",
-                              "user-agent": f"vesper-quoter/{VERSION}"})
-    r.raise_for_status()
-    return r.json()
+
+def _with_retries(what, fn):
+    """Retry transient network faults; give up immediately on real answers.
+
+    A 4xx, or an RPC error object, is the server telling us something true —
+    repeating the question will not change it. Timeouts, connection resets and
+    5xx are worth another attempt.
+    """
+    requests = _requests()
+    delay = BACKOFF
+    last = None
+    for attempt in range(1, RETRIES + 1):
+        try:
+            return fn(requests)
+        except requests.exceptions.HTTPError as e:
+            code = getattr(e.response, "status_code", 0)
+            if code and code < 500:
+                raise
+            last = e
+        except (requests.exceptions.Timeout,
+                requests.exceptions.ConnectionError) as e:
+            last = e
+        except ValueError as e:                  # undecodable JSON body
+            last = e
+        if attempt < RETRIES:
+            time.sleep(delay)
+            delay *= 2
+    raise RuntimeError(f"{what} failed after {RETRIES} attempts: {last}")
+
+def _http(url, timeout=20):
+    def go(requests):
+        r = requests.get(url, timeout=timeout,
+                         headers={"accept": "application/json",
+                                  "user-agent": f"vesper-quoter/{VERSION}"})
+        r.raise_for_status()
+        return r.json()
+    return _with_retries(f"GET {url}", go)
 
 def _rpc(method, params=None):
-    try:
-        import requests
-    except ImportError:
-        die("requests is not installed. Run: pip install eth-account requests")
-    r = requests.post(RPC, timeout=20, json={"jsonrpc": "2.0", "id": 1,
-                                             "method": method, "params": params or []})
-    r.raise_for_status()
-    j = r.json()
-    if "error" in j:
-        raise RuntimeError(j["error"].get("message", "rpc error"))
-    return j["result"]
+    def go(requests):
+        r = requests.post(RPC, timeout=20,
+                          json={"jsonrpc": "2.0", "id": 1,
+                                "method": method, "params": params or []})
+        r.raise_for_status()
+        j = r.json()
+        if "error" in j:
+            # a well-formed refusal, not a transport fault
+            raise _RpcError(j["error"].get("message", "rpc error"))
+        return j["result"]
+    return _with_retries(f"rpc {method}", go)
+
+class _RpcError(RuntimeError):
+    pass
 
 def die(msg, code=1):
     print(f"  ✗ {msg}", file=sys.stderr)

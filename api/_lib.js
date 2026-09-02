@@ -4,24 +4,71 @@ const EXPLORER = 'https://robinhoodchain.blockscout.com';
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 ' +
            '(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
+const RETRIES = 3;
+const BACKOFF_MS = 400;
+const TIMEOUT_MS = 8000;
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// A refusal is an answer; a timeout is not. Only the latter is worth repeating.
+class PermanentError extends Error {}
+
+async function withRetries(what, fn) {
+  let delay = BACKOFF_MS;
+  let last;
+  for (let attempt = 1; attempt <= RETRIES; attempt++) {
+    try {
+      return await fn();
+    } catch (e) {
+      if (e instanceof PermanentError) throw e;
+      last = e;
+      if (attempt < RETRIES) { await sleep(delay); delay *= 2; }
+    }
+  }
+  throw new Error(`${what} failed after ${RETRIES} attempts: ${last && last.message}`);
+}
+
+async function fetchWithTimeout(url, opts = {}) {
+  // A serverless function that hangs on an upstream burns the whole invocation.
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...opts, signal: ac.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function rpc(method, params = []) {
-  const r = await fetch(RPC, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
+  return withRetries(`rpc ${method}`, async () => {
+    const r = await fetchWithTimeout(RPC, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
+    });
+    if (!r.ok) {
+      if (r.status < 500) throw new PermanentError('rpc ' + r.status);
+      throw new Error('rpc ' + r.status);
+    }
+    const j = await r.json();
+    if (j.error) throw new PermanentError(j.error.message || 'rpc error');
+    return j.result;
   });
-  if (!r.ok) throw new Error('rpc ' + r.status);
-  const j = await r.json();
-  if (j.error) throw new Error(j.error.message || 'rpc error');
-  return j.result;
 }
 
 async function blockscout(path) {
-  const r = await fetch(EXPLORER + path, {
-    headers: { 'user-agent': UA, accept: 'application/json' }
+  return withRetries(`explorer ${path}`, async () => {
+    const r = await fetchWithTimeout(EXPLORER + path, {
+      headers: { 'user-agent': UA, accept: 'application/json' }
+    });
+    if (!r.ok) {
+      // The explorer sits behind a bot check that answers 403 to anything it
+      // dislikes; hammering it is how a soft block becomes a hard one.
+      if (r.status < 500) throw new PermanentError('explorer ' + r.status);
+      throw new Error('explorer ' + r.status);
+    }
+    return r.json();
   });
-  if (!r.ok) throw new Error('explorer ' + r.status);
-  return r.json();
 }
 
 const calendar = require('../data/market_calendar.json');
@@ -106,4 +153,5 @@ function send(res, status, body, maxAge = 60) {
   res.status(status).send(JSON.stringify(body, null, 1));
 }
 
-module.exports = { rpc, blockscout, sessionState, send, RPC, CHAIN_ID, EXPLORER };
+module.exports = { rpc, blockscout, sessionState, send, withRetries,
+                   PermanentError, RPC, CHAIN_ID, EXPLORER };
