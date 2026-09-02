@@ -38,6 +38,70 @@ jobs:
           print("ok: USDG is 6 decimals")
           PY
 
+      - name: Market calendar is current and well-formed
+        run: |
+          python - <<'PY'
+          import json, sys, datetime
+          cal = json.load(open('data/market_calendar.json'))
+          today = datetime.date.today()
+          through = datetime.date.fromisoformat(cal['verified_through'])
+          problems = []
+          # A calendar that expires without warning is worse than none at all.
+          if through < today:
+              problems.append(f"calendar expired on {through}")
+          elif (through - today).days < 60:
+              print(f"::warning::market calendar runs out on {through} — extend it")
+          seen = set()
+          for kind in ('holidays', 'early_closes'):
+              for e in cal[kind]:
+                  d = datetime.date.fromisoformat(e['date'])
+                  if d.weekday() >= 5:
+                      problems.append(f"{e['date']} ({e['name']}) falls on a weekend "
+                                      "- observed dates only")
+                  if (kind, e['date']) in seen:
+                      problems.append(f"duplicate {kind} entry {e['date']}")
+                  seen.add((kind, e['date']))
+          for p in problems:
+              print("  x", p)
+          sys.exit(1 if problems else 0)
+          PY
+
+      - name: Python and JS session models agree
+        run: |
+          # Two implementations of the same clock will drift unless something
+          # keeps checking. Sample every hour across a year, both must match.
+          python - <<'PY' > /tmp/py_session.json
+          import datetime, importlib.util, json
+          from zoneinfo import ZoneInfo
+          spec = importlib.util.spec_from_file_location("q", "quoter.py")
+          q = importlib.util.module_from_spec(spec); spec.loader.exec_module(q)
+          NY = ZoneInfo("America/New_York")
+          out = {}
+          t = datetime.datetime(2026, 1, 1, tzinfo=NY)
+          end = datetime.datetime(2027, 1, 1, tzinfo=NY)
+          while t < end:
+              u = t.astimezone(datetime.timezone.utc)
+              s = q.session_state(u)
+              out[u.isoformat()] = [s['open'], s['minutes_until_change']]
+              t += datetime.timedelta(hours=1)
+          json.dump(out, open('/dev/stdout', 'w'))
+          PY
+          node -e "
+          const l = require('./api/_lib.js');
+          const py = require('/tmp/py_session.json');
+          let bad = 0, n = 0;
+          for (const [iso, [open, until]] of Object.entries(py)) {
+            const s = l.sessionState(new Date(iso));
+            n++;
+            if (s.open !== open || s.minutes_until_change !== until) {
+              if (bad < 5) console.log('MISMATCH', iso, {js: [s.open, s.minutes_until_change], py: [open, until]});
+              bad++;
+            }
+          }
+          console.log(n + ' samples, ' + bad + ' mismatches');
+          if (bad) { console.log('session models disagree'); process.exit(1); }
+          "
+
       - name: Session clock boundaries
         run: |
           python - <<'PY'
