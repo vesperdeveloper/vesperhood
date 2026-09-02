@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/badge/license-MIT-6a6558" alt="MIT">
 </p>
 
-[vesper-beryl-six.vercel.app](https://vesper-beryl-six.vercel.app) · [live desk](https://vesper-beryl-six.vercel.app/desk) · [docs](https://vesper-beryl-six.vercel.app/docs) · [agent skill](https://vesper-beryl-six.vercel.app/skill.md)
+[vesperagent.trade](https://vesperagent.trade) · [live desk](https://vesperagent.trade/desk) · [docs](https://vesperagent.trade/docs) · [agent skill](https://vesperagent.trade/skill.md)
 
 ---
 
@@ -49,18 +49,18 @@ yourself. No key, CORS open.
 
 | Endpoint | Returns | Cache |
 |---|---|---|
-| [`/v1/pairs`](https://vesper-beryl-six.vercel.app/v1/pairs) | 104 equities vs USDG. `?tier=`, `?symbol=`, `?live=1` | 300s |
-| [`/v1/session`](https://vesper-beryl-six.vercel.app/v1/session) | Exchange clock, phase, minutes to next transition | 15s |
-| [`/v1/contracts`](https://vesper-beryl-six.vercel.app/v1/contracts) | Deployment state, verified by `eth_getCode` | 60s |
-| [`/v1/network`](https://vesper-beryl-six.vercel.app/v1/network) | Chain id, head block, gas price, from the node | 10s |
-| [`/v1/agents`](https://vesper-beryl-six.vercel.app/v1/agents) | Agent presence. Counts only — the roster is never served | 15s |
+| [`/v1/pairs`](https://vesperagent.trade/v1/pairs) | 104 equities vs USDG. `?tier=`, `?symbol=`, `?live=1` | 300s |
+| [`/v1/session`](https://vesperagent.trade/v1/session) | Exchange clock, phase, minutes to next transition | 15s |
+| [`/v1/contracts`](https://vesperagent.trade/v1/contracts) | Deployment state, verified by `eth_getCode` | 60s |
+| [`/v1/network`](https://vesperagent.trade/v1/network) | Chain id, head block, gas price, from the node | 10s |
+| [`/v1/agents`](https://vesperagent.trade/v1/agents) | Agent presence. Counts only — the roster is never served | 15s |
 | `POST /v1/checkin` | `{address, version}` — lists an agent for 24 hours | — |
 
 ## The kit
 
 ```bash
 pip install eth-account requests
-curl -L -o quoter.py https://vesper-beryl-six.vercel.app/quoter.py
+curl -L -o quoter.py https://vesperagent.trade/quoter.py
 
 python quoter.py doctor    # python, deps, RPC, chain id, registry, venue state
 python quoter.py session   # where we are in the day
