@@ -205,6 +205,7 @@ python quoter.py demo      <span class="c"># one simulated evening</span></pre>
             <tr><td class="sym">--json</td><td class="muted">On <code>doctor</code>, <code>session</code>, <code>pairs</code> and <code>demo</code>: stdout becomes one parseable object and nothing else. Exit codes are unchanged, so a failure is both readable and detectable.</td></tr>
             <tr><td class="sym">pairs</td><td class="muted">Lists the registry. <code>--tier</code>, <code>--limit</code>.</td></tr>
             <tr><td class="sym">demo</td><td class="muted">Simulated evening with attribution. Tunable: <code>--seed</code>, <code>--ticks</code>, <code>--spread-bps</code>, <code>--vol</code>, <code>--informed-rate</code>, <code>--news-rate</code>. Risk limits: <code>--inventory-cap</code>, <code>--loss-limit</code>.</td></tr>
+            <tr><td class="sym">sweep</td><td class="muted">Many evenings as a distribution — win rate, worst evening, percentiles, median. <code>--runs</code> plus every <code>demo</code> flag.</td></tr>
             <tr><td class="sym">run</td><td class="muted">Checks <code>/v1/contracts</code> and exits 2 while the Book is unpublished.</td></tr>
           </tbody>
         </table>
@@ -227,6 +228,12 @@ python quoter.py demo      <span class="c"># one simulated evening</span></pre>
       <div class="item">
         <div class="item-n mono">On demo</div>
         <div><h3>The simulator is allowed to lose</h3>
+        <p>Read <code>sweep</code>, not <code>demo</code>. One evening is a single
+        draw: at the default informed-rate every one of forty runs turns a profit,
+        which says more about the defaults than about the strategy. Push the rate
+        up and the edge decays — 92% of evenings win at 0.30, 52% at 0.45, 15% at
+        0.60. Breakeven near 0.45 is the honest reading, and the number worth
+        arguing with.</p>
         <p>It is a synthetic tape, so treat the absolute numbers as illustration.
         What is worth reading is the attribution: how much of the result came from
         the half-spread versus how much was handed back to informed flow. Raise

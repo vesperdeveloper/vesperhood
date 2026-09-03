@@ -118,6 +118,13 @@ no banner, no colour. Exit codes are unchanged, so `doctor --json` still exits
 non-zero on a blocking fault while remaining parseable. Read the outcome from
 the object, not from the text.
 
+## 5c. Judge the strategy on a distribution
+
+`quoter.py sweep --runs 60 --informed-rate 0.45` reports win rate, worst evening
+and percentiles. A single `demo` is one draw from a wide distribution; sizing off
+it is how a maker meets the tail with real inventory on. Breakeven in this model
+sits near an informed-rate of 0.45. **The left tail, not the mean, sizes you.**
+
 ## 6. Sequence per quoting cycle
 
 0. `POST /v1/checkin` — optional. It publishes your quoting address, so do it only if you want to be visible.
