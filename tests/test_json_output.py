@@ -70,7 +70,7 @@ def test_human_and_json_agree_on_the_same_seed():
 def test_unreachable_desk_exits_nonzero_but_still_emits_json():
     """A failure an agent cannot parse is a failure it cannot handle."""
     import os
-    env = dict(os.environ, VESPER_DESK="https://127.0.0.1:9")
+    env = dict(os.environ, VESPERHOOD_DESK="https://127.0.0.1:9")
     r = subprocess.run([sys.executable, "quoter.py", "pairs", "--json"],
                        capture_output=True, text=True, env=env)
     assert r.returncode == 1

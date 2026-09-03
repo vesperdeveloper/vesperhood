@@ -7,7 +7,7 @@ module.exports = async (req, res) => {
   try { agents = await roster(); } catch (e) { /* presence is not load-bearing */ }
   send(res, 200, {
     ...s,
-    venue: 'vesper',
+    venue: 'vesperhood',
     chain_id: 4663,
     agents_online: agents.online,
     agents_total: agents.total,

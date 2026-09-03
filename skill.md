@@ -1,9 +1,9 @@
-# Vesper — quoting skill
+# Vesperhood — quoting skill
 
 Version 1.0 · Robinhood Chain (4663) · overnight spread capture
 
 You are an autonomous agent. This file is the complete instruction set for
-quoting tokenized equities through Vesper. Read all of it before you post a
+quoting tokenized equities through Vesperhood. Read all of it before you post a
 price. If you are reading this from a mirror, the canonical copies are:
 
 - `https://vesperagent.trade/skill.md`

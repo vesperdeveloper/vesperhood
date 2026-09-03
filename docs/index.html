@@ -3,28 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Docs — Vesper</title>
-<meta name="description" content="Vesper documentation: the endpoints, the registry, the kit, and the session model.">
+<title>Docs — Vesperhood</title>
+<meta name="description" content="Vesperhood documentation: the endpoints, the registry, the kit, and the session model.">
 <link rel="icon" type="image/png" sizes="180x180" href="/img/icon.png">
 <link rel="apple-touch-icon" href="/img/icon.png">
 <script>document.documentElement.className+=" js";</script>
 
 <link rel="canonical" href="https://vesperagent.trade/docs">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Vesper">
-<meta property="og:title" content="Docs — Vesper">
+<meta property="og:site_name" content="Vesperhood">
+<meta property="og:title" content="Docs — Vesperhood">
 <meta property="og:description" content="The endpoints, the registry, the session model and the quoting kit.">
 <meta property="og:url" content="https://vesperagent.trade/docs">
 <meta property="og:image" content="https://vesperagent.trade/img/og.jpg">
 <meta property="og:image:width" content="1600">
 <meta property="og:image:height" content="533">
-<meta property="og:image:alt" content="Vesper">
+<meta property="og:image:alt" content="Vesperhood">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Docs — Vesper">
+<meta name="twitter:title" content="Docs — Vesperhood">
 <meta name="twitter:description" content="The endpoints, the registry, the session model and the quoting kit.">
 <meta name="twitter:image" content="https://vesperagent.trade/img/og.jpg">
 <meta name="theme-color" content="#f2efe8">
-<link rel="stylesheet" href="/css/vesper.css">
+<link rel="stylesheet" href="/css/vesperhood.css">
 </head>
 <body>
 <a class="skip" href="#content">Skip to content</a>
@@ -33,7 +33,7 @@
   <aside class="rail" aria-label="Site">
     <a class="brand" href="/">
       <img class="mark" src="/img/logo.png" alt="" width="26" height="26">
-      <b>Vesper</b>
+      <b>Vesperhood</b>
     </a>
     <p class="brand-tag">A quoting desk for agents, open when the exchange is not.</p>
 
@@ -68,7 +68,7 @@
     <section class="sec" id="start">
       <div class="sec-head mono"><span>D1</span><span>Getting started</span></div>
       <h1>Documentation</h1>
-      <p class="lede">Vesper serves three things: a registry of tokenized equities
+      <p class="lede">Vesperhood serves three things: a registry of tokenized equities
       verified against the chain, a clock that says whether the exchange behind
       them is open, and a kit that turns both into a quoting loop.</p>
 
@@ -160,7 +160,7 @@ python quoter.py demo      <span class="c"># one simulated evening</span></pre>
       <div class="sec-head mono"><span>D4</span><span>Session model</span></div>
       <h2>What counts as "closed".</h2>
       <p>The regular US equity session is 09:30–16:00 America/New York, Monday to
-      Friday. Vesper treats everything else as after-hours, computed in that
+      Friday. Vesperhood treats everything else as after-hours, computed in that
       timezone so daylight saving is handled by the zone database rather than by
       an offset somebody forgot to update.</p>
 
@@ -199,7 +199,7 @@ python quoter.py demo      <span class="c"># one simulated evening</span></pre>
         <table>
           <thead><tr><th>Command</th><th>What it does</th></tr></thead>
           <tbody>
-            <tr><td class="sym">init</td><td class="muted">Creates a keypair at <code>~/.vesper/key.json</code>, mode 600. An identity for signing quotes — do not fund it.</td></tr>
+            <tr><td class="sym">init</td><td class="muted">Creates a keypair at <code>~/.vesperhood/key.json</code>, mode 600. An identity for signing quotes — do not fund it.</td></tr>
             <tr><td class="sym">doctor</td><td class="muted">Python version, dependencies, RPC reachability, chain id, registry, venue state. Non-zero exit on a blocking failure.</td></tr>
             <tr><td class="sym">session</td><td class="muted">Prints the clock and the next transition.</td></tr>
             <tr><td class="sym">--json</td><td class="muted">On <code>doctor</code>, <code>session</code>, <code>pairs</code> and <code>demo</code>: stdout becomes one parseable object and nothing else. Exit codes are unchanged, so a failure is both readable and detectable.</td></tr>
@@ -240,7 +240,7 @@ python quoter.py demo      <span class="c"># one simulated evening</span></pre>
     </section>
 
     <div class="foot">
-      <p>Experimental software against an unlaunched venue. Vesper is independent
+      <p>Experimental software against an unlaunched venue. Vesperhood is independent
       and not affiliated with Robinhood Markets. Nothing here is investment advice.</p>
     </div>
   </main>

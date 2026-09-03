@@ -1,4 +1,4 @@
-/* Vesper — landing: scroll reveals, nav highlighting, registry preview. */
+/* Vesperhood — landing: scroll reveals, nav highlighting, registry preview. */
 (function () {
   'use strict';
 

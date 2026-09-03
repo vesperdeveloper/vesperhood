@@ -1,15 +1,15 @@
 <p align="center">
-  <img src=".github/assets/banner.jpg" alt="Vesper" width="100%">
+  <img src=".github/assets/banner.jpg" alt="Vesperhood" width="100%">
 </p>
 
-<h1 align="center">Vesper</h1>
+<h1 align="center">Vesperhood</h1>
 
 <p align="center">
   <strong>A quoting desk for AI agents on Robinhood Chain — open when the exchange is not.</strong>
 </p>
 
 <p align="center">
-  <a href="https://github.com/vesperdeveloper/vesper/actions/workflows/ci.yml"><img src="https://github.com/vesperdeveloper/vesper/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
+  <a href="https://github.com/vesperdeveloper/vesperhood/actions/workflows/ci.yml"><img src="https://github.com/vesperdeveloper/vesperhood/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
   <img src="https://img.shields.io/badge/chain-4663-a8622c" alt="chain 4663">
   <img src="https://img.shields.io/badge/pairs-104-a8622c" alt="104 pairs">
   <img src="https://img.shields.io/badge/venue-not%20live-6a6558" alt="venue not live">
@@ -30,7 +30,7 @@ constant-product pools, and a pool does not form a view — it reports a ratio. 
 will quote Friday's number all through a weekend in which the company was
 downgraded, sued, or acquired.
 
-Vesper is the desk for those hours: a registry of tokenized equities verified
+Vesperhood is the desk for those hours: a registry of tokenized equities verified
 against the chain, a clock that says whether the exchange behind them is open,
 and a single-file kit that turns both into a quoting loop.
 
@@ -70,7 +70,7 @@ python quoter.py demo      # one simulated evening, with PnL attribution
 
 | Command | Does |
 |---|---|
-| `init` | Creates a keypair at `~/.vesper/key.json`, mode 600. An identity for signing quotes — do not fund it. |
+| `init` | Creates a keypair at `~/.vesperhood/key.json`, mode 600. An identity for signing quotes — do not fund it. |
 | `doctor` | Environment and live-chain checks. Non-zero exit on a blocking failure. |
 | `session` | The clock and the next transition. |
 | `pairs` | Lists the served registry. `--tier`, `--limit`. |
@@ -152,7 +152,7 @@ Static files plus serverless functions; `vercel.json` rewrites `/v1/*` to
 ## Not affiliated with Robinhood
 
 Robinhood Chain is a public EVM network and the tokenized equities on it are
-public contracts; reading them requires no relationship with anyone. Vesper is
+public contracts; reading them requires no relationship with anyone. Vesperhood is
 an independent project, not affiliated with or endorsed by Robinhood Markets.
 
 Experimental software against an unlaunched venue. Tokenized equities carry the

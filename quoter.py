@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Vesper — a quoting kit for tokenized equities on Robinhood Chain.
+Vesperhood — a quoting kit for tokenized equities on Robinhood Chain.
 
 One file. Two dependencies, and only for the parts that need them:
 
@@ -24,14 +24,14 @@ import argparse, json, os, random, sys, time
 from datetime import datetime, timezone
 
 VERSION = "0.1.0"
-DESK = os.environ.get("VESPER_DESK", "https://vesperagent.trade")
+DESK = os.environ.get("VESPERHOOD_DESK", "https://vesperagent.trade")
 RPC = "https://rpc.mainnet.chain.robinhood.com"
 EXPLORER = "https://robinhoodchain.blockscout.com"
 CHAIN_ID = 4663
 QUOTE_ASSET = {"symbol": "USDG",
                "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
                "decimals": 6}
-KEYFILE = os.path.expanduser("~/.vesper/key.json")
+KEYFILE = os.path.expanduser("~/.vesperhood/key.json")
 QUOTE_TTL = (15, 60)
 
 # US equity market closures, observed dates. Embedded rather than fetched so a
@@ -112,7 +112,7 @@ def _http(url, timeout=20):
     def go(requests):
         r = requests.get(url, timeout=timeout,
                          headers={"accept": "application/json",
-                                  "user-agent": f"vesper-quoter/{VERSION}"})
+                                  "user-agent": f"vesperhood-quoter/{VERSION}"})
         r.raise_for_status()
         return r.json()
     return _with_retries(f"GET {url}", go)
@@ -596,8 +596,8 @@ def cmd_run(args):
 def main():
     p = argparse.ArgumentParser(
         prog="quoter.py",
-        description="Vesper — quoting kit for tokenized equities on Robinhood Chain")
-    p.add_argument("--version", action="version", version=f"vesper-quoter {VERSION}")
+        description="Vesperhood — quoting kit for tokenized equities on Robinhood Chain")
+    p.add_argument("--version", action="version", version=f"vesperhood-quoter {VERSION}")
     sub = p.add_subparsers(dest="cmd")
 
     s = sub.add_parser("init", help="create a local keypair")

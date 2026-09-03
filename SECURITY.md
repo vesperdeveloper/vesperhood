@@ -1,11 +1,11 @@
 # Security
 
-Vesper asks people to run a Python file that creates a keypair. That deserves
+Vesperhood asks people to run a Python file that creates a keypair. That deserves
 plainer language than most threat models get.
 
 ## What the kit does and does not do
 
-- `init` writes a keypair to `~/.vesper/key.json`, mode 600. It is an identity
+- `init` writes a keypair to `~/.vesperhood/key.json`, mode 600. It is an identity
   for signing quotes. **Do not fund it.**
 - Nothing in the kit signs a transaction, moves a balance, or reads any other
   wallet on the machine.
