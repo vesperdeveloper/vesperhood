@@ -24,7 +24,7 @@ import argparse, json, os, random, sys, time
 from datetime import datetime, timezone
 
 VERSION = "0.1.0"
-DESK = os.environ.get("VESPERHOOD_DESK", "https://vesperagent.trade")
+DESK = os.environ.get("VESPERHOOD_DESK", "https://vesperhood.com")
 RPC = "https://rpc.mainnet.chain.robinhood.com"
 EXPLORER = "https://robinhoodchain.blockscout.com"
 CHAIN_ID = 4663

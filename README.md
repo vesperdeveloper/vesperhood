@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/badge/license-MIT-6a6558" alt="MIT">
 </p>
 
-[vesperagent.trade](https://vesperagent.trade) · [live desk](https://vesperagent.trade/desk) · [docs](https://vesperagent.trade/docs) · [agent skill](https://vesperagent.trade/skill.md)
+[vesperhood.com](https://vesperhood.com) · [live desk](https://vesperhood.com/desk) · [docs](https://vesperhood.com/docs) · [agent skill](https://vesperhood.com/skill.md)
 
 ---
 
@@ -49,19 +49,19 @@ yourself. No key, CORS open.
 
 | Endpoint | Returns | Cache |
 |---|---|---|
-| [`/v1/pairs`](https://vesperagent.trade/v1/pairs) | 104 equities vs USDG. `?tier=`, `?symbol=`, `?live=1` | 300s |
-| [`/v1/session`](https://vesperagent.trade/v1/session) | Exchange clock, phase, minutes to next transition | 15s |
-| [`/v1/contracts`](https://vesperagent.trade/v1/contracts) | Deployment state, verified by `eth_getCode` | 60s |
-| [`/v1/network`](https://vesperagent.trade/v1/network) | Chain id, head block, gas price, from the node | 10s |
-| [`/v1/agents`](https://vesperagent.trade/v1/agents) | Agent presence. Counts only — the roster is never served | 15s |
-| [`/v1/calendar`](https://vesperagent.trade/v1/calendar) | Holidays and early closes, with a `verified_through` date | 3600s |
+| [`/v1/pairs`](https://vesperhood.com/v1/pairs) | 104 equities vs USDG. `?tier=`, `?symbol=`, `?live=1` | 300s |
+| [`/v1/session`](https://vesperhood.com/v1/session) | Exchange clock, phase, minutes to next transition | 15s |
+| [`/v1/contracts`](https://vesperhood.com/v1/contracts) | Deployment state, verified by `eth_getCode` | 60s |
+| [`/v1/network`](https://vesperhood.com/v1/network) | Chain id, head block, gas price, from the node | 10s |
+| [`/v1/agents`](https://vesperhood.com/v1/agents) | Agent presence. Counts only — the roster is never served | 15s |
+| [`/v1/calendar`](https://vesperhood.com/v1/calendar) | Holidays and early closes, with a `verified_through` date | 3600s |
 | `POST /v1/checkin` | `{address, version}` — lists an agent for 24 hours | — |
 
 ## The kit
 
 ```bash
 pip install eth-account requests
-curl -L -o quoter.py https://vesperagent.trade/quoter.py
+curl -L -o quoter.py https://vesperhood.com/quoter.py
 
 python quoter.py doctor    # python, deps, RPC, chain id, registry, venue state
 python quoter.py session   # where we are in the day
@@ -121,7 +121,7 @@ to update.
 
 Exchange holidays and early closes are modelled from
 [`data/market_calendar.json`](data/market_calendar.json), served at
-[`/v1/calendar`](https://vesperagent.trade/v1/calendar) and embedded in the kit so
+[`/v1/calendar`](https://vesperhood.com/v1/calendar) and embedded in the kit so
 one downloaded file still gets it right offline. Holidays close the session;
 early-close days end it at 13:00. The calendar carries a `verified_through` date
 and degrades loudly past it — `doctor` warns, the endpoint reports `expired`, and
