@@ -368,3 +368,46 @@ a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-vis
   border-radius: 3px;
 }
 .main:focus { outline: none; }
+
+/* ---------- downloads ---------- */
+
+.dl {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: 26px 0 8px;
+}
+.dl a {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 20px 20px 18px;
+  background: var(--card);
+  text-decoration: none;
+  color: var(--ink);
+  transition: background .18s ease;
+}
+.dl a:hover { background: var(--paper-2); }
+.dl a:hover .dl-go { color: var(--ember); }
+.dl a:hover .dl-go .arr { transform: translateX(3px); }
+
+.dl-kind {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--ember);
+}
+.dl-name { font-size: 16px; font-weight: 600; letter-spacing: -.006em; }
+.dl-what { color: var(--dim); font-size: 13px; line-height: 1.5; flex: 1 1 auto; }
+.dl-go {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--dim);
+  margin-top: 4px; transition: var(--tap);
+}
+.dl-go .arr { transition: transform .22s cubic-bezier(.2,.8,.3,1); }
+.dl-size { color: var(--faint); }
+
+@media (max-width: 980px) { .dl { grid-template-columns: 1fr; } }
