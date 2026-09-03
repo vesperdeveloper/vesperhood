@@ -29,8 +29,18 @@
 <body>
 <a class="skip" href="#content">Skip to content</a>
 <div class="topbar">
-  <span class="topbar-ca">Contract <b class="addr-soon">soon</b></span>
-  <span class="topbar-note">Venue not live · accepts no capital</span>
+  <span class="topbar-ca">
+    Contract
+    <button type="button" class="ca-copy" data-ca="0xbf996f1d8fc8976c9Ca1AF4548fc1dD78CE5d36D"
+            aria-label="Copy the contract address">
+      <span class="ca-full">0xbf996f1d8fc8976c9Ca1AF4548fc1dD78CE5d36D</span>
+      <span class="ca-short">0xbf99…d36D</span>
+      <span class="ca-state" aria-hidden="true">copy</span>
+    </button>
+    <a class="ca-explorer" href="https://robinhoodchain.blockscout.com/token/0xbf996f1d8fc8976c9Ca1AF4548fc1dD78CE5d36D"
+       target="_blank" rel="noopener">Explorer</a>
+  </span>
+  <span class="topbar-note">VESPER · Robinhood Chain 4663</span>
 </div>
 
 <div class="shell">
@@ -136,5 +146,6 @@
 <button class="tswitch" id="tswitch" type="button" aria-label="Switch between the paper and night grounds">Night</button>
 <script src="/js/session.js"></script>
 <script src="/js/desk.js"></script>
+<script src="/js/ca.js"></script>
 </body>
 </html>

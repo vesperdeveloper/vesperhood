@@ -464,3 +464,41 @@ a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-vis
   .topbar { padding: 0 var(--gut); font-size: 9px; letter-spacing: .07em; }
   .topbar-note { display: none; }
 }
+
+/* ---------- contract address ---------- */
+
+.ca-copy {
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--line-2); background: transparent;
+  color: var(--ember); cursor: pointer;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .06em;
+  transition: var(--tap);
+}
+.ca-copy:hover { border-color: var(--ember); background: var(--ember-soft); }
+.ca-copy.done { border-color: var(--good); color: var(--good); }
+
+.ca-state {
+  color: var(--faint); letter-spacing: .09em; text-transform: uppercase;
+  transition: color .18s ease;
+}
+.ca-copy:hover .ca-state { color: var(--ember); }
+.ca-copy.done .ca-state { color: var(--good); }
+
+.ca-short { display: none; }
+
+.ca-explorer {
+  color: var(--faint); text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: var(--tap);
+}
+.ca-explorer:hover { color: var(--ember); border-color: var(--ember); }
+
+@media (max-width: 1180px) {
+  .ca-full { display: none; }
+  .ca-short { display: inline; }
+}
+@media (max-width: 560px) {
+  .ca-explorer { display: none; }
+  .ca-state { display: none; }
+}
