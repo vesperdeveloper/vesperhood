@@ -411,3 +411,34 @@ a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .dl-size { color: var(--faint); }
 
 @media (max-width: 980px) { .dl { grid-template-columns: 1fr; } }
+
+/* ---------- brand row: wordmark + accounts + contract ---------- */
+
+.brand-line { display: flex; align-items: center; gap: 12px; }
+.brand-line .brand { flex: 0 0 auto; }
+
+.brand-links { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; }
+.brand-links a {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 7px;
+  color: var(--faint);
+  border: 1px solid transparent;
+  transition: var(--tap);
+}
+.brand-links a:hover { color: var(--ink); border-color: var(--line); background: var(--card); }
+.brand-links svg { width: 14px; height: 14px; fill: currentColor; display: block; }
+
+.ca {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 14px; padding: 6px 11px;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--card);
+  font-family: var(--mono); font-size: 10px; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--faint);
+  transition: background .5s ease, border-color .5s ease;
+}
+.ca b { color: var(--ember); font-weight: 500; letter-spacing: .08em; }
+
+@media (max-width: 980px) {
+  .brand-links { margin-left: 0; }
+}
