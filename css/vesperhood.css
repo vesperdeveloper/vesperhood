@@ -145,7 +145,7 @@ img { max-width: 100%; }
 .meta b.live { color: var(--good); }
 .meta b.shut { color: var(--ember); }
 
-.social { display: flex; gap: 16px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+.social { display: flex; flex-wrap: wrap; gap: 9px 14px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
 .social a { color: var(--faint); text-decoration: none; font-family: var(--mono); font-size: 10px; letter-spacing: .09em; text-transform: uppercase; transition: var(--tap); }
 .social a:hover { color: var(--ember); }
 
