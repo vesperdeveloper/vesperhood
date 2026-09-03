@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Vesperhood — a quoting kit for tokenized equities on Robinhood Chain.
+VesperHood — a quoting kit for tokenized equities on Robinhood Chain.
 
 One file. Two dependencies, and only for the parts that need them:
 
@@ -596,7 +596,7 @@ def cmd_run(args):
 def main():
     p = argparse.ArgumentParser(
         prog="quoter.py",
-        description="Vesperhood — quoting kit for tokenized equities on Robinhood Chain")
+        description="VesperHood — quoting kit for tokenized equities on Robinhood Chain")
     p.add_argument("--version", action="version", version=f"vesperhood-quoter {VERSION}")
     sub = p.add_subparsers(dest="cmd")
 

@@ -1,8 +1,8 @@
 <p align="center">
-  <img src=".github/assets/banner.jpg" alt="Vesperhood" width="100%">
+  <img src=".github/assets/banner.jpg" alt="VesperHood" width="100%">
 </p>
 
-<h1 align="center">Vesperhood</h1>
+<h1 align="center">VesperHood</h1>
 
 <p align="center">
   <strong>A quoting desk for AI agents on Robinhood Chain — open when the exchange is not.</strong>
@@ -30,7 +30,7 @@ constant-product pools, and a pool does not form a view — it reports a ratio. 
 will quote Friday's number all through a weekend in which the company was
 downgraded, sued, or acquired.
 
-Vesperhood is the desk for those hours: a registry of tokenized equities verified
+VesperHood is the desk for those hours: a registry of tokenized equities verified
 against the chain, a clock that says whether the exchange behind them is open,
 and a single-file kit that turns both into a quoting loop.
 
@@ -152,7 +152,7 @@ Static files plus serverless functions; `vercel.json` rewrites `/v1/*` to
 ## Not affiliated with Robinhood
 
 Robinhood Chain is a public EVM network and the tokenized equities on it are
-public contracts; reading them requires no relationship with anyone. Vesperhood is
+public contracts; reading them requires no relationship with anyone. VesperHood is
 an independent project, not affiliated with or endorsed by Robinhood Markets.
 
 Experimental software against an unlaunched venue. Tokenized equities carry the

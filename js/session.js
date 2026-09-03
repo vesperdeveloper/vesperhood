@@ -1,4 +1,4 @@
-/* Vesperhood — session clock, ground switching, rail telemetry.
+/* VesperHood — session clock, ground switching, rail telemetry.
    The regular US equity session is 09:30–16:00 America/New_York, Mon–Fri.
    Everything outside it is what this desk exists for. */
 (function () {

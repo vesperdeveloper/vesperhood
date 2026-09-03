@@ -1,6 +1,6 @@
 # Security
 
-Vesperhood asks people to run a Python file that creates a keypair. That deserves
+VesperHood asks people to run a Python file that creates a keypair. That deserves
 plainer language than most threat models get.
 
 ## What the kit does and does not do

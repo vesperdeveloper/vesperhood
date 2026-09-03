@@ -1,4 +1,4 @@
-/* Vesperhood — the live desk. */
+/* VesperHood — the live desk. */
 (function () {
   'use strict';
   var all = [], tier = 'all', term = '';
