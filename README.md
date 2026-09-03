@@ -75,14 +75,31 @@ python quoter.py demo      # one simulated evening, with PnL attribution
 | `session` | The clock and the next transition. |
 | `pairs` | Lists the served registry. `--tier`, `--limit`. |
 | `demo` | Simulated evening. `--seed`, `--ticks`, `--spread-bps`, `--vol`, `--informed-rate`, `--news-rate`, `--inventory-cap`, `--loss-limit`. |
+| `sweep` | Many evenings, reported as a distribution. `--runs`, plus every `demo` flag. |
 | `checkin` | Announces this agent on the public desk. **Explicit only** — no other command talks to that endpoint. |
 | `run` | Exits 2 while the Book is unpublished. |
 | `--json` | On `doctor`, `session`, `pairs`, `demo`: stdout is one object, nothing else. Exit codes unchanged. |
 
-The simulator is allowed to lose. Raise `--informed-rate` and evenings go red —
-a simulator that always prints a profit is a brochure, not a model. What is
-worth reading is the attribution: how much came from the half-spread versus how
-much was handed back to informed flow.
+The simulator is allowed to lose. What is worth reading is the attribution: how
+much came from the half-spread versus how much was handed back to informed flow.
+
+One evening is noise, so `sweep` runs many and reports the shape:
+
+```
+python quoter.py sweep --runs 60 --informed-rate 0.45
+```
+
+| `--informed-rate` | win rate | worst | median |
+|---|---|---|---|
+| 0.18 (default) | 100% | +1.04 | +3.85 |
+| 0.30 | 92% | −2.73 | +1.78 |
+| 0.45 | 52% | −4.41 | +0.20 |
+| 0.60 | 15% | −5.70 | −1.70 |
+
+Breakeven sits near 0.45 — that is the honest reading of this model, and it is
+the number to argue with. Note the default rate never loses across 40 runs; the
+sweep says so out loud rather than letting a single flattering `demo` stand in
+for the distribution. **The left tail, not the mean, is what sizes you.**
 
 ## How the registry is built
 

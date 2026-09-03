@@ -12,6 +12,7 @@ Commands
     session   report the session clock and the next transition
     pairs     list the served registry (--tier core|active|tail)
     demo      run one simulated evening with per-fill PnL attribution
+    sweep     run many evenings and report the distribution of outcomes
     checkin   announce this agent on the public desk (explicit, never automatic)
     run       refuses until the Book is deployed and verified
 
@@ -398,11 +399,87 @@ def cmd_pairs(args):
 
 # ---------------------------------------------------------------- demo
 
-def cmd_demo(args):
-    """One simulated evening. No network, no capital, no venue."""
-    quiet = getattr(args, "json", False)
-    if not quiet:
-        rule("demo — simulated evening")
+def run_evening(args, seed):
+    """One evening, returned rather than printed. cmd_demo renders; sweep counts."""
+    import copy
+    a = copy.copy(args)
+    a.seed = seed
+    a.json = True
+    a._collect = True
+    return _simulate(a)
+
+
+def cmd_sweep(args):
+    """One evening tells you nothing. The distribution is the information."""
+    results = []
+    for i in range(args.runs):
+        results.append(run_evening(args, args.seed + i))
+
+    nets = sorted(r["attribution"]["net"] for r in results)
+    wins = sum(1 for n in nets if n > 0)
+    fills = sum(r["fills"] for r in results)
+    halts = sum(1 for r in results if r["halted_at_tick"])
+
+    def pct(p):
+        if not nets:
+            return 0.0
+        k = (len(nets) - 1) * p
+        lo, hi = int(k), min(int(k) + 1, len(nets) - 1)
+        return nets[lo] + (nets[hi] - nets[lo]) * (k - lo)
+
+    summary = {
+        "runs": args.runs,
+        "symbol": args.symbol.upper(),
+        "ticks": args.ticks,
+        "informed_rate": args.informed_rate,
+        "win_rate": round(wins / len(nets), 4) if nets else 0,
+        "net": {
+            "worst": round(nets[0], 4),
+            "p10": round(pct(0.10), 4),
+            "median": round(pct(0.50), 4),
+            "p90": round(pct(0.90), 4),
+            "best": round(nets[-1], 4),
+            "mean": round(sum(nets) / len(nets), 4) if nets else 0,
+            "total": round(sum(nets), 4),
+        },
+        "fills": fills,
+        "evenings_halted_by_loss_limit": halts,
+        "note": "synthetic tape; the left tail is the number that matters",
+    }
+
+    if getattr(args, "json", False):
+        return emit(summary)
+
+    rule(f"sweep — {args.runs} evenings")
+    n = summary["net"]
+    print(f"  {args.symbol.upper()}/USDG · {args.ticks} ticks · "
+          f"informed-rate {args.informed_rate} · seeds "
+          f"{args.seed}-{args.seed + args.runs - 1}\n")
+    w = 26
+    print(f"  {'win rate':<{w}}{summary['win_rate'] * 100:>9.1f}%")
+    print(f"  {'worst evening':<{w}}{n['worst']:>+10.3f}")
+    print(f"  {'10th percentile':<{w}}{n['p10']:>+10.3f}")
+    print(f"  {'median':<{w}}{n['median']:>+10.3f}")
+    print(f"  {'90th percentile':<{w}}{n['p90']:>+10.3f}")
+    print(f"  {'best evening':<{w}}{n['best']:>+10.3f}")
+    print(f"  {'mean':<{w}}{n['mean']:>+10.3f}")
+    print(f"  {'total over {} runs'.format(args.runs):<{w}}{n['total']:>+10.3f}")
+    print(f"\n  {'fills':<{w}}{fills:>10}")
+    print(f"  {'halted by loss limit':<{w}}{halts:>10}")
+    print()
+    if n["median"] > 0 and n["worst"] < 0:
+        ok("positive median, losing tail — the shape a spread business should have")
+    elif n["worst"] >= 0:
+        warn("nothing lost in any run — widen the sweep or raise --informed-rate "
+             "before believing this")
+    else:
+        warn("negative median — this configuration does not pay")
+    note("synthetic tape. The left tail, not the mean, is what sizes you.")
+
+
+def _simulate(args):
+    """One simulated evening, returned as data. Rendering is somebody else's job."""
+    quiet = getattr(args, "json", False) or getattr(args, "_collect", False)
     rnd = random.Random(args.seed)
 
     sym = args.symbol.upper()
@@ -505,54 +582,65 @@ def cmd_demo(args):
     net = gross - adverse - costs
     mark = cash + inv * ref
 
-    if quiet:
-        return emit({
-            "ok": True,
-            "symbol": sym,
-            "seed": args.seed,
-            "ticks": args.ticks,
-            "fills": fills,
-            "pulls": pulls,
-            "capped": capped,
-            "halted_at_tick": halted,
-            "attribution": {
-                "half_spread": round(gross, 6),
-                "adverse_selection": round(-adverse, 6),
-                "fees": round(-costs, 6),
-                "net": round(net, 6),
-                "net_per_fill": round(net / fills, 6) if fills else None,
-            },
-            "inventory_left": round(inv, 6),
-            "mark_to_reference": round(mark, 6),
-            "limits": {"inventory_cap": args.inventory_cap,
-                       "loss_limit": args.loss_limit},
-            "note": "synthetic tape, synthetic fills",
-        })
+    return {
+        "ok": True,
+        "symbol": sym,
+        "seed": args.seed,
+        "ticks": args.ticks,
+        "fills": fills,
+        "pulls": pulls,
+        "capped": capped,
+        "halted_at_tick": halted,
+        "attribution": {
+            "half_spread": round(gross, 6),
+            "adverse_selection": round(-adverse, 6),
+            "fees": round(-costs, 6),
+            "net": round(net, 6),
+            "net_per_fill": round(net / fills, 6) if fills else None,
+        },
+        "inventory_left": round(inv, 6),
+        "mark_to_reference": round(mark, 6),
+        "limits": {"inventory_cap": args.inventory_cap,
+                   "loss_limit": args.loss_limit},
+        "note": "synthetic tape, synthetic fills",
+    }
 
+
+def cmd_demo(args):
+    """One simulated evening. No network, no capital, no venue."""
+    quiet = getattr(args, "json", False)
+    if not quiet:
+        rule("demo — simulated evening")
+    r = _simulate(args)
+    if quiet:
+        return emit(r)
+
+    a = r["attribution"]
     rule("attribution")
     w = 30
-    print(f"  {'Half-spread captured':<{w}}{gross:>+10.3f}")
-    print(f"  {'Adverse selection':<{w}}{-adverse:>+10.3f}")
-    print(f"  {'Fees':<{w}}{-costs:>+10.3f}")
+    print(f"  {'Half-spread captured':<{w}}{a['half_spread']:>+10.3f}")
+    print(f"  {'Adverse selection':<{w}}{a['adverse_selection']:>+10.3f}")
+    print(f"  {'Fees':<{w}}{a['fees']:>+10.3f}")
     print("  " + "─" * (w + 10))
-    print(f"  {'Net, USDG':<{w}}{net:>+10.3f}")
-    print(f"\n  {'fills':<{w}}{fills:>10}")
-    print(f"  {'quotes pulled on news':<{w}}{pulls:>10}")
+    print(f"  {'Net, USDG':<{w}}{a['net']:>+10.3f}")
+    print(f"\n  {'fills':<{w}}{r['fills']:>10}")
+    print(f"  {'quotes pulled on news':<{w}}{r['pulls']:>10}")
     if args.inventory_cap:
-        print(f"  {'fills declined at cap':<{w}}{capped:>10}")
-    if halted:
-        print(f"  {'halted at tick':<{w}}{halted:>10}  (loss limit)")
-    if fills:
-        print(f"  {'net per fill':<{w}}{net / fills:>+10.3f}")
-    print(f"  {'inventory left':<{w}}{inv:>10.3f} {sym}")
-    print(f"  {'mark-to-reference':<{w}}{mark:>+10.3f}")
+        print(f"  {'fills declined at cap':<{w}}{r['capped']:>10}")
+    if r["halted_at_tick"]:
+        print(f"  {'halted at tick':<{w}}{r['halted_at_tick']:>10}  (loss limit)")
+    if a["net_per_fill"] is not None:
+        print(f"  {'net per fill':<{w}}{a['net_per_fill']:>+10.3f}")
+    print(f"  {'inventory left':<{w}}{r['inventory_left']:>10.3f} {r['symbol']}")
+    print(f"  {'mark-to-reference':<{w}}{r['mark_to_reference']:>+10.3f}")
 
     print()
-    if net > 0:
+    if a["net"] > 0:
         ok("positive evening — the half-spread outran the adverse selection")
     else:
         warn("negative evening — informed flow won this one")
-    note("synthetic tape, synthetic fills. Re-run with --seed to see the spread of outcomes.")
+    note("synthetic tape, synthetic fills. Run `sweep` to see the distribution.")
+
 
 def cmd_checkin(args):
     """Announce this agent on the public desk. Explicit, never automatic."""
@@ -643,6 +731,25 @@ def main():
     s.add_argument("--json", action="store_true",
                    help="machine-readable output")
     s.set_defaults(fn=cmd_demo)
+
+    s = sub.add_parser("sweep", help="many evenings, reported as a distribution")
+    s.add_argument("--runs", type=int, default=40)
+    s.add_argument("--symbol", default="NVDA")
+    s.add_argument("--price", type=float, default=182.40)
+    s.add_argument("--ticks", type=int, default=200)
+    s.add_argument("--seed", type=int, default=1)
+    s.add_argument("--spread-bps", type=float, default=18.0)
+    s.add_argument("--vol", type=float, default=0.0009)
+    s.add_argument("--fill-rate", type=float, default=0.22)
+    s.add_argument("--informed-rate", type=float, default=0.18)
+    s.add_argument("--news-rate", type=float, default=0.02)
+    s.add_argument("--skew-bps", type=float, default=6.0)
+    s.add_argument("--fee", type=float, default=0.004)
+    s.add_argument("--size", type=float, nargs=2, default=[0.4, 2.5])
+    s.add_argument("--inventory-cap", type=float, default=8.0)
+    s.add_argument("--loss-limit", type=float, default=25.0)
+    s.add_argument("--json", action="store_true", help="machine-readable output")
+    s.set_defaults(fn=cmd_sweep)
 
     s = sub.add_parser("checkin", help="announce this agent on the public desk")
     s.set_defaults(fn=cmd_checkin)
