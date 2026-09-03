@@ -23,6 +23,7 @@
   --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   --rail: 292px;
+  --topbar: 36px;
   --gut: 56px;
   --radius: 10px;
   --shadow: 0 1px 2px rgba(22,21,26,.05), 0 12px 32px -12px rgba(22,21,26,.14);
@@ -74,8 +75,8 @@ img { max-width: 100%; }
   width: var(--rail);
   flex: 0 0 var(--rail);
   position: sticky;
-  top: 0;
-  height: 100vh;
+  top: var(--topbar);
+  height: calc(100vh - var(--topbar));
   padding: 38px 34px 26px;
   border-right: 1px solid var(--line);
   display: flex;
@@ -428,17 +429,38 @@ a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .brand-links a:hover { color: var(--ink); border-color: var(--line); background: var(--card); }
 .brand-links svg { width: 14px; height: 14px; fill: currentColor; display: block; }
 
-.ca {
-  display: inline-flex; align-items: center; gap: 8px;
-  margin-top: 14px; padding: 6px 11px;
-  border: 1px solid var(--line); border-radius: 999px;
-  background: var(--card);
-  font-family: var(--mono); font-size: 10px; letter-spacing: .09em;
-  text-transform: uppercase; color: var(--faint);
-  transition: background .5s ease, border-color .5s ease;
-}
-.ca b { color: var(--ember); font-weight: 500; letter-spacing: .08em; }
 
 @media (max-width: 980px) {
   .brand-links { margin-left: 0; }
+}
+
+/* ---------- contract bar ---------- */
+
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  height: var(--topbar);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px;
+  padding: 0 var(--gut) 0 24px;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: .09em; text-transform: uppercase;
+  color: var(--faint);
+  transition: background .5s ease, border-color .5s ease;
+}
+.topbar-ca { display: inline-flex; align-items: center; gap: 9px; min-width: 0; }
+.topbar-ca b {
+  color: var(--ember); font-weight: 500;
+  letter-spacing: .1em;
+}
+.topbar-ca .addr-soon {
+  padding: 3px 9px; border-radius: 999px;
+  border: 1px solid var(--line-2);
+}
+.topbar-note { color: var(--faint); white-space: nowrap; }
+
+@media (max-width: 700px) {
+  .topbar { padding: 0 var(--gut); font-size: 9px; letter-spacing: .07em; }
+  .topbar-note { display: none; }
 }
